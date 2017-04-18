@@ -1,0 +1,10 @@
+Conifg Saver should be able to save local linux configs. It should be able to list configs and ignore part of them.
+
+cs u/untracked -> list untracked files
+cs a/add -> add files to track
+
+What do we need:
+- directory for storing repo of config files
+- list of tracked files
+- ignore list
+- config file in yaml
