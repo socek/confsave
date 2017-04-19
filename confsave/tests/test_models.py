@@ -3,6 +3,7 @@ from os import symlink
 from os.path import dirname
 from os.path import exists
 from os.path import join
+from os.path import realpath
 from tempfile import NamedTemporaryFile
 
 from mock import MagicMock
@@ -100,3 +101,44 @@ class TestEndpoint(object):
             mock.return_value = '/tmp/home'
             endpoint.make_folders()
         assert exists(dirname(repo_path))
+
+    def test_add_to_repo(self, app):
+        """
+        .add_to_repo should copy local file to local repo and create a symlink
+        in the old place
+        """
+        repo_path = NamedTemporaryFile().name
+        user_path = NamedTemporaryFile().name
+        local_file = '.testfile'
+        local_file_path = join(user_path, local_file)
+
+        app.get_repo_path.return_value = repo_path
+        mkdir(user_path)
+        mkdir(repo_path)
+        with open(local_file_path, 'w') as localfile:
+            localfile.write('testdata')
+
+        endpoint = Endpoint(app, local_file_path)
+        assert not endpoint.is_link()
+
+        with patch.object(endpoint, '_get_user_path') as mock:
+            mock.return_value = user_path
+
+            endpoint.add_to_repo()
+
+            assert open(endpoint.get_repo_path()).read() == 'testdata'
+            assert realpath(local_file_path) == endpoint.get_repo_path()
+            assert endpoint.is_link()
+
+    def test_add_to_repo_when_already_added_to_repo(self, app):
+        """
+        .add_to_repo should do nothing, if the symlink is already created
+        """
+        endpoint = Endpoint(app, NamedTemporaryFile().name)
+        with patch.object(endpoint, 'is_link') as mis_link:
+            with patch('confsave.models.symlink') as msymlink:
+                mis_link.return_value = True
+
+                endpoint.add_to_repo()
+
+                assert not msymlink.called
