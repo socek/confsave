@@ -10,4 +10,7 @@ class Application(object):
         self.settings = self.Settings()
 
     def get_repo_path(self):
+        """
+        path to a local repo
+        """
         return expanduser(self.settings.REPO_PATH)
