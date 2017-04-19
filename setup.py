@@ -6,6 +6,7 @@ install_requires = [
     'pytest==3.0.7',
     'mock==2.0.0',
     'GitPython-2.1.3',
+    'pyyaml-3.12',
 ]
 
 

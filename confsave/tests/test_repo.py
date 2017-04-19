@@ -1,19 +1,27 @@
 from os import mkdir
+from os.path import join
 from tempfile import NamedTemporaryFile
 
 from mock import MagicMock
 from mock import patch
 from pytest import fixture
 from pytest import yield_fixture
+from yaml import dump
+from yaml import load
 
 from confsave.repo import LocalRepo
 
 
-class TestRepo(object):
+class TestLocalRepo(object):
 
     @fixture
     def repo_path(self):
         return NamedTemporaryFile().name
+
+    @fixture
+    def existing_repo_path(self, repo_path, app):
+        mkdir(repo_path)
+        return repo_path
 
     @fixture
     def app(self, repo_path):
@@ -85,3 +93,41 @@ class TestRepo(object):
         assert repo.git == mrepo.return_value
         mrepo.assert_called_once_with()
         mrepo.return_value.init.assert_called_once_with(repo_path, mkdir=True)
+
+    def test_read_config_if_not_existing(self, repo, existing_repo_path, app):
+        """
+        .read_config should only flush the .config field if no config file exists
+        """
+        conf_path = join(existing_repo_path, '.conf.yaml')
+        app.get_config_path.return_value = conf_path
+        repo.config = {'garbage': 10}
+
+        repo.read_config()
+
+        assert repo.config == {}
+
+    def test_read_config_if_existing(self, repo, existing_repo_path, app):
+        """
+        .read_config should read the config if it exists
+        """
+        conf_path = join(existing_repo_path, '.conf.yaml')
+        app.get_config_path.return_value = conf_path
+        repo.config = {'garbage': 10}
+        expected_data = {'true': 'data'}
+        with open(conf_path, 'w') as file:
+            dump(expected_data, file, default_flow_style=False)
+
+        repo.read_config()
+
+        assert repo.config == expected_data
+
+    def test_write_config(self, repo, existing_repo_path, app):
+        conf_path = join(existing_repo_path, '.conf.yaml')
+        app.get_config_path.return_value = conf_path
+        expected_data = {'true': 10}
+        repo.config = expected_data
+
+        repo.write_config()
+
+        with open(conf_path, 'r') as file:
+            assert load(file) == expected_data
