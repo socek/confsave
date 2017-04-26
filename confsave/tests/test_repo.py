@@ -9,6 +9,7 @@ from pytest import yield_fixture
 from yaml import dump
 from yaml import load
 
+from confsave.models import Endpoint
 from confsave.repo import LocalRepo
 
 
@@ -91,8 +92,8 @@ class TestLocalRepo(object):
         repo.init_git_repo()
 
         assert repo.git == mrepo.return_value
-        mrepo.assert_called_once_with()
-        mrepo.return_value.init.assert_called_once_with(repo_path, mkdir=True)
+        mrepo.init.assert_called_once_with(repo_path, mkdir=True)
+        mrepo.assert_called_once_with(repo_path)
 
     def test_read_config_if_not_existing(self, repo, existing_repo_path, app):
         """
@@ -104,7 +105,7 @@ class TestLocalRepo(object):
 
         repo.read_config()
 
-        assert repo.config == {}
+        assert repo.config == {'files': []}
 
     def test_read_config_if_existing(self, repo, existing_repo_path, app):
         """
@@ -122,6 +123,9 @@ class TestLocalRepo(object):
         assert repo.config == expected_data
 
     def test_write_config(self, repo, existing_repo_path, app):
+        """
+        .write_config should save config to a file
+        """
         conf_path = join(existing_repo_path, '.conf.yaml')
         app.get_config_path.return_value = conf_path
         expected_data = {'true': 10}
@@ -131,3 +135,21 @@ class TestLocalRepo(object):
 
         with open(conf_path, 'r') as file:
             assert load(file) == expected_data
+
+    def test_add_endpoint_to_repo(self, existing_repo_path, repo, app):
+        """
+        .add_endpoint_to_repo should add file to the local repo git index
+        and add user path to the config file
+        """
+        local_path = NamedTemporaryFile(delete=False).name
+        conf_path = join(existing_repo_path, '.conf.yaml')
+        app.get_config_path.return_value = conf_path
+        endpoint = Endpoint(app, local_path)
+
+        with open(endpoint.get_repo_path(), 'w') as file:
+            file.write('now')
+
+        repo.init_git_repo()
+        repo.add_endpoint_to_repo(endpoint)
+
+        assert repo.config['files'] == [local_path]

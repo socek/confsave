@@ -1,6 +1,8 @@
 from os.path import expanduser
 from os.path import join
 
+from confsave.repo import LocalRepo
+
 
 class Application(object):
 
@@ -10,6 +12,7 @@ class Application(object):
 
     def __init__(self):
         self.settings = self.Settings()
+        self.repo = LocalRepo(self)
 
     def get_repo_path(self):
         """

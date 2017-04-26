@@ -10,7 +10,7 @@ class LocalRepo(object):
     def __init__(self, app):
         self.app = app
         self.git = None
-        self.config = {}
+        self.config = {'files': []}
 
     def is_created(self):
         """
@@ -29,11 +29,9 @@ class LocalRepo(object):
         """
         Initalize git repo.
         """
-        if self.is_created():
-            self.git = Repo(self.app.get_repo_path())
-        else:
-            self.git = Repo()
-            self.git.init(self.app.get_repo_path(), mkdir=True)
+        if not self.is_created():
+            Repo.init(self.app.get_repo_path(), mkdir=True)
+        self.git = Repo(self.app.get_repo_path())
 
     def read_config(self):
         """
@@ -43,7 +41,7 @@ class LocalRepo(object):
             with open(self.app.get_config_path(), 'r') as file:
                 self.config = load(file)
         else:
-            self.config = {}
+            self.config = {'files': []}
 
     def write_config(self):
         """
@@ -51,3 +49,10 @@ class LocalRepo(object):
         """
         with open(self.app.get_config_path(), 'w') as file:
             dump(self.config, file, default_flow_style=False)
+
+    def add_endpoint_to_repo(self, endpoint):
+        """
+        Add path to repo and the config.
+        """
+        self.git.index.add([endpoint.get_repo_path()])
+        self.config['files'].append(endpoint.path)

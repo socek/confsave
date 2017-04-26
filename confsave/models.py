@@ -67,6 +67,7 @@ class Endpoint(object):
         copy local file to local repo and create a symlink in the old place
         """
         if not self.is_link():
+            self.make_folders()
             copyfile(self.path, self.get_repo_path())
             unlink(self.path)
             symlink(self.get_repo_path(), self.path)
