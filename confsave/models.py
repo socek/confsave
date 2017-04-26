@@ -71,3 +71,4 @@ class Endpoint(object):
             copyfile(self.path, self.get_repo_path())
             unlink(self.path)
             symlink(self.get_repo_path(), self.path)
+            self.app.repo.add_endpoint_to_repo(self)
