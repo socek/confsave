@@ -9,8 +9,8 @@ class Commands(object):
     def show_list(self):
         pass
 
-    def ignore(self):
+    def ignore(self, filename):
         pass
 
-    def status(self):
+    def show_status(self):
         pass

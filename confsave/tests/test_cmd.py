@@ -16,7 +16,7 @@ class TestCommandParser(object):
 
     @yield_fixture
     def mcommands(self):
-        with patch('confsave.cmd.Commands') as mock:
+        with patch('confsave.cmd.Commands', autospec=True) as mock:
             yield mock
 
     @fixture
