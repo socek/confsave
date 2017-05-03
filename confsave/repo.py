@@ -59,19 +59,52 @@ class LocalRepo(object):
         self.git.index.add([endpoint.get_repo_path()])
         self.config['files'].append(endpoint.path)
 
-    def set_remote(self, remote):
+    def set_remote(self, remote_path):
         """
         Connect with remote repo.
         """
-        if self.REMOTE_NAME not in [remote.name for remote in self.git.remotes]:
-            remote = self.git.create_remote(self.REMOTE_NAME, remote)
-        else:
-            remote = self.git.remotes[self.REMOTE_NAME]
-
+        remote = self._get_remote(remote_path)
         remote.fetch()
+        was_created = self._create_remote_branch(remote)
+        self._set_remote_branch(remote)
 
+        if not was_created:
+            # if the branch was not created, then we need to pull changes from the upstream
+            remote.pull()
+
+    def _get_remote(self, remote_path):
+        """
+        Create link to the remote or use already existing one.
+        """
+        if self.REMOTE_NAME not in [remote.name for remote in self.git.remotes]:
+            return self.git.create_remote(self.REMOTE_NAME, remote_path)
+        else:
+            return self.git.remotes[self.REMOTE_NAME]
+
+    def _create_remote_branch(self, remote):
+        """
+        Create remote branch if needed. Return status of creation.
+        """
         if self.BRANCH_NAME not in [ref.name for ref in remote.refs]:
-            remote.push('master:master')
+            remote.push('{0}:{0}'.format(self.BRANCH_NAME))
+            return True
+        return False
 
-        self.git.heads[self.BRANCH_NAME].set_tracking_branch(remote.refs[self.BRANCH_NAME])
-        remote.pull()
+    def _set_remote_branch(self, remote):
+        """
+        Link local branch to a remote one.
+        """
+        local = self.git.heads[self.BRANCH_NAME]
+        upstream = remote.refs[self.BRANCH_NAME]
+        local.set_tracking_branch(upstream)
+
+    def init_branch(self):
+        """
+        Make initial commit if needed.
+        """
+        if self.git.refs == []:
+            self.write_config()
+            index = self.git.index
+            index.add([self.app.get_config_path()])
+            index.commit('inital commit')
+            self.git.active_branch.rename(self.BRANCH_NAME)

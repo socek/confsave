@@ -13,6 +13,7 @@ class Commands(object):
         Initialize the git repo if needed and read the confsave config.
         """
         self.app.repo.init_git_repo()
+        self.app.repo.init_branch()
         self.app.repo.read_config()
 
     def add(self, filename):

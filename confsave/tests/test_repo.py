@@ -4,6 +4,7 @@ from tempfile import NamedTemporaryFile
 
 from mock import MagicMock
 from mock import patch
+from mock import sentinel
 from pytest import fixture
 from pytest import yield_fixture
 from yaml import dump
@@ -42,6 +43,36 @@ class TestLocalRepo(object):
     @yield_fixture
     def mrepo(self):
         with patch('confsave.repo.Repo') as mock:
+            yield mock
+
+    @fixture
+    def remote(self):
+        return MagicMock()
+
+    @fixture
+    def mgit(self, repo):
+        repo.git = MagicMock()
+        return repo.git
+
+    @yield_fixture
+    def mget_remote(self, repo, remote):
+        with patch.object(repo, '_get_remote') as mock:
+            mock.return_value = remote
+            yield mock
+
+    @yield_fixture
+    def mcreate_remote_branch(self, repo):
+        with patch.object(repo, '_create_remote_branch') as mock:
+            yield mock
+
+    @yield_fixture
+    def mset_remote_branch(self, repo):
+        with patch.object(repo, '_set_remote_branch') as mock:
+            yield mock
+
+    @yield_fixture
+    def mwrite_config(self, repo):
+        with patch.object(repo, 'write_config') as mock:
             yield mock
 
     def test_init(self, repo, app):
@@ -154,3 +185,129 @@ class TestLocalRepo(object):
         repo.add_endpoint_to_repo(endpoint)
 
         assert repo.config['files'] == [local_path]
+
+    def test_set_remote_branch(self, repo, remote, mgit):
+        """
+        ._set_remote_branch should link local branch to a remote one.
+        """
+        local = MagicMock()
+        upstream = MagicMock()
+        mgit.heads = {repo.BRANCH_NAME: local}
+        remote.refs = {repo.BRANCH_NAME: upstream}
+
+        repo._set_remote_branch(remote)
+
+        local.set_tracking_branch.assert_called_once_with(upstream)
+
+    def test_create_remote_branch_when_branch_not_existsing(self, repo, remote):
+        """
+        ._create_remote_branch should push branch to the remote
+        """
+        remote.refs = []
+        assert repo._create_remote_branch(remote) is True
+        remote.push.assert_called_once_with('{0}:{0}'.format(repo.BRANCH_NAME))
+
+    def test_create_remote_branch_when_branch_existsing(self, repo, remote):
+        """
+        ._create_remote_branch should do nothing when the branch exists
+        """
+        ref = MagicMock()
+        ref.name = repo.BRANCH_NAME
+        remote.refs = [ref]
+        assert repo._create_remote_branch(remote) is False
+
+    def test_get_remote_when_not_existing(self, repo, mgit):
+        """
+        ._get_remote should create new remote when it is not existing
+        """
+        mgit.remotes = []
+
+        assert repo._get_remote(sentinel.remote_path) == mgit.create_remote.return_value
+
+        mgit.create_remote.assert_called_once_with(repo.REMOTE_NAME, sentinel.remote_path)
+
+    def test_get_remote_when_existing(self, repo, mgit):
+        """
+        ._get_remote should get existing remote
+        """
+        repo.REMOTE_NAME = 0  # this trick is to use repo.git.remote as dict and as list.
+        # repo.git.remote is an object which can be use like dict and like list.
+        remote = MagicMock()
+        remote.name = repo.REMOTE_NAME
+        mgit.remotes = [remote]
+
+        assert repo._get_remote(sentinel.remote_path) == remote
+
+        assert not mgit.create_remote.called
+
+    def test_set_remote_when_branch_not_created(
+        self,
+        repo,
+        mget_remote,
+        mcreate_remote_branch,
+        mset_remote_branch,
+        remote,
+    ):
+        """
+        set_remote should pull the data from remote branch when the ._create_remote_branch has not created the branch
+        """
+        mcreate_remote_branch.return_value = False
+
+        repo.set_remote(sentinel.remote_path)
+
+        remote.pull.assert_called_once_with()
+
+        # flow asserts
+        mget_remote.assert_called_once_with(sentinel.remote_path)
+        remote.fetch.assert_called_once_with()
+        mcreate_remote_branch.assert_called_once_with(remote)
+        mset_remote_branch.assert_called_once_with(remote)
+
+    def test_set_remote_when_branch_created(
+        self,
+        repo,
+        mget_remote,
+        mcreate_remote_branch,
+        mset_remote_branch,
+        remote,
+    ):
+        """
+        set_remote should not pull the data from remote branch when the ._create_remote_branch just created the branch
+        """
+        mcreate_remote_branch.return_value = True
+
+        repo.set_remote(sentinel.remote_path)
+
+        assert not remote.pull.called
+
+        # flow asserts
+        mget_remote.assert_called_once_with(sentinel.remote_path)
+        remote.fetch.assert_called_once_with()
+        mcreate_remote_branch.assert_called_once_with(remote)
+        mset_remote_branch.assert_called_once_with(remote)
+
+    def test_init_branch_when_branch_already_initalized(self, repo, mgit, mwrite_config):
+        """
+        .init_branch should do nothing when the branch is already initalized.
+        """
+        mgit.refs = [1]
+
+        repo.init_branch()
+
+        assert not mwrite_config.called
+
+    def test_init_branch_when_branch_not_initalized(self, repo, mgit, mwrite_config, app):
+        """
+        .init_branch should initalize branch when non has been initalized
+        """
+        mgit.refs = []
+
+        repo.init_branch()
+
+        mwrite_config.assert_called_once_with()
+        app.get_config_path.assert_called_once_with()
+
+        index = mgit.index
+        index.add.assert_called_once_with([app.get_config_path.return_value])
+        index.commit.assert_called_once_with('inital commit')
+        mgit.active_branch.rename.assert_called_once_with(repo.BRANCH_NAME)

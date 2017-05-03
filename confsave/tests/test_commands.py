@@ -44,6 +44,7 @@ class TestCommands(object):
         commands._init_repo()
 
         app.repo.init_git_repo.assert_called_once_with()
+        app.repo.init_branch.assert_called_once_with()
         app.repo.read_config.assert_called_once_with()
 
     def test_add(self, commands, minit_repo, mendpoint, app):
