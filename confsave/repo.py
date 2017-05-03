@@ -108,3 +108,14 @@ class LocalRepo(object):
             index.add([self.app.get_config_path()])
             index.commit('inital commit')
             self.git.active_branch.rename(self.BRANCH_NAME)
+
+    def commit(self, message):
+        """
+        Commit files added to the index and push them to the repo.
+        """
+        remote = self._get_remote(None)
+        # at this point the remote should be avalible
+        # TODO: make proper error message
+
+        self.git.index.commit(message)
+        remote.push()

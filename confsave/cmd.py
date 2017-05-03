@@ -3,16 +3,13 @@ from os.path import exists
 
 from confsave.app import Application
 from confsave.commands import Commands
+from confsave.commands import EmptyValue
 
 
 class ValidationError(Exception):
 
     def __init__(self, message):
         self.message = message
-
-
-class EmptyValue(object):
-    pass
 
 
 class CommandLine(object):
@@ -53,7 +50,7 @@ class CommandLine(object):
             '--commit',
             '-c',
             nargs='?',
-            const=EmptyValue(),
+            const=EmptyValue,
             help='commit changes to the repo',
             dest='commit')
         self.parser.add_argument(

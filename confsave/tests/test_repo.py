@@ -311,3 +311,13 @@ class TestLocalRepo(object):
         index.add.assert_called_once_with([app.get_config_path.return_value])
         index.commit.assert_called_once_with('inital commit')
         mgit.active_branch.rename.assert_called_once_with(repo.BRANCH_NAME)
+
+    def test_commit(self, repo, mget_remote, mgit, remote):
+        """
+        .commit should commit files added to the index and push them to the remote repo
+        """
+        repo.commit(sentinel.message)
+
+        mget_remote.assert_called_once_with(None)
+        mgit.index.commit.assert_called_once_with(sentinel.message)
+        remote.push.assert_called_once_with()

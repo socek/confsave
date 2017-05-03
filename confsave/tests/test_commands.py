@@ -1,6 +1,7 @@
 from mock import MagicMock
 from mock import call
 from mock import patch
+from mock import sentinel
 from pytest import fixture
 from pytest import yield_fixture
 
@@ -127,3 +128,30 @@ class TestCommands(object):
             call('status2'),
             call(''),
         ]
+
+    def test_commit_whit_no_message(self, commands, minit_repo, app):
+        """
+        .commit should create default message for commit if non was passed
+        """
+        commands.commit()
+
+        minit_repo.assert_called_once_with()
+        app.repo.commit.assert_called_once_with('configuration stamp')
+
+    def test_commit_whit_message(self, commands, minit_repo, app):
+        """
+        .commit should use passed message for commit
+        """
+        commands.commit(sentinel.message)
+
+        minit_repo.assert_called_once_with()
+        app.repo.commit.assert_called_once_with(sentinel.message)
+
+    def test_set_repo(self, commands, minit_repo, app):
+        """
+        .set_repo should set remote path repo
+        """
+        commands.set_repo(sentinel.repo_path)
+
+        minit_repo.assert_called_once_with()
+        app.repo.set_remote.assert_called_once_with(sentinel.repo_path)

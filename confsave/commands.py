@@ -3,6 +3,10 @@ from glob import glob
 from confsave.models import Endpoint
 
 
+class EmptyValue(object):
+    pass
+
+
 class Commands(object):
 
     def __init__(self, app):
@@ -48,12 +52,18 @@ class Commands(object):
             if not line.endswith(self.app.settings.CONFIG_FILENAME):
                 print(line)
 
-    def commit(self, message=None):
-        # todo: should also add config file
-        # should make proper message
-        # should push
-        pass
+    def commit(self, message=EmptyValue):
+        """
+        Commit files added to the index and push them to the repo.
+        """
+        self._init_repo()
+        if message == EmptyValue:
+            message = 'configuration stamp'
+        self.app.repo.commit(message)
 
     def set_repo(self, remote):
+        """
+        Set remote url.
+        """
         self._init_repo()
         self.app.repo.set_remote(remote)
