@@ -142,6 +142,7 @@ class TestLocalRepo(object):
         and add user path to the config file
         """
         local_path = NamedTemporaryFile(delete=False).name
+        app.get_home_path.return_value = '/tmp'
         conf_path = join(existing_repo_path, '.conf.yaml')
         app.get_config_path.return_value = conf_path
         endpoint = Endpoint(app, local_path)

@@ -66,6 +66,7 @@ class TestEndpoint(object):
         .get_repo_path should give path of the file in the local repo
         """
         app.get_repo_path.return_value = '/tmp/fake'
+        app.get_home_path.return_value = '/home/socek'
         endpoint = Endpoint(app, '/home/socek/.config/chromium')
 
         assert endpoint.get_repo_path() == '/tmp/fake/.config/chromium'
@@ -76,6 +77,7 @@ class TestEndpoint(object):
         in order to copy local file to local repo
         """
         app.get_repo_path.return_value = '/tmp/fake'
+        app.get_home_path.return_value = '/home/socek'
         endpoint = Endpoint(app, '/home/socek/.config/chromium/end')
 
         assert list(endpoint.get_folders_paths()) == [

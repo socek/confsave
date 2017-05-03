@@ -1,0 +1,13 @@
+0.1
+* commit
+* add repo path
+* push
+
+0.2
+* change settings by cmd
+* Make ability to add whole folders.
+* ignore files (what for?)
+
+0.3
+* Create repo on server and give a link for it
+* Do not allow to add files from outside the home folder

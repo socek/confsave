@@ -33,11 +33,12 @@ class CommandLine(object):
             action='store_true',
             help='list untracked files',
             dest='list')
-        self.parser.add_argument(
-            '--ignore',
-            '-i',
-            help='add file to ignore list',
-            dest='ignore')
+        # TODO: will be implemented at 0.2v
+        # self.parser.add_argument(
+        #     '--ignore',
+        #     '-i',
+        #     help='add file to ignore list',
+        #     dest='ignore')
         self.parser.add_argument(
             '--status',
             '-s',

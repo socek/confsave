@@ -1,4 +1,5 @@
 from os import mkdir
+from os import sep
 from os import symlink
 from os import unlink
 from os.path import abspath
@@ -43,7 +44,7 @@ class Endpoint(object):
         userpath = self._get_user_path()
         head = dirname(self.path[len(userpath) + 1:])
         paths = []
-        while head != '':
+        while head != '' and head != sep:
             paths.append(join(self.app.get_repo_path(), head))
             head = dirname(head)
 
@@ -60,7 +61,7 @@ class Endpoint(object):
         """
         get home path of the user
         """
-        return expanduser('~')
+        return expanduser(self.app.get_home_path())
 
     def add_to_repo(self):
         """
