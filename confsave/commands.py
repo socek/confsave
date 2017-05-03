@@ -53,5 +53,6 @@ class Commands(object):
         # should push
         pass
 
-    def add_repo(self, remote):
-        pass
+    def set_repo(self, remote):
+        self._init_repo()
+        self.app.repo.set_remote(remote)

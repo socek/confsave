@@ -6,6 +6,8 @@ from git import Repo
 
 
 class LocalRepo(object):
+    REMOTE_NAME = 'origin'
+    BRANCH_NAME = 'master'
 
     def __init__(self, app):
         self.app = app
@@ -56,3 +58,20 @@ class LocalRepo(object):
         """
         self.git.index.add([endpoint.get_repo_path()])
         self.config['files'].append(endpoint.path)
+
+    def set_remote(self, remote):
+        """
+        Connect with remote repo.
+        """
+        if self.REMOTE_NAME not in [remote.name for remote in self.git.remotes]:
+            remote = self.git.create_remote(self.REMOTE_NAME, remote)
+        else:
+            remote = self.git.remotes[self.REMOTE_NAME]
+
+        remote.fetch()
+
+        if self.BRANCH_NAME not in [ref.name for ref in remote.refs]:
+            remote.push('master:master')
+
+        self.git.heads[self.BRANCH_NAME].set_tracking_branch(remote.refs[self.BRANCH_NAME])
+        remote.pull()

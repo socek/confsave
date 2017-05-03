@@ -11,3 +11,4 @@
 * Create repo on server and give a link for it
 * Do not allow to add files from outside the home folder
 * ignore files (what for?)
+* Make ability to set remote more then once

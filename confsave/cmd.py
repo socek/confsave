@@ -57,10 +57,10 @@ class CommandLine(object):
             help='commit changes to the repo',
             dest='commit')
         self.parser.add_argument(
-            '--add-repo',
+            '--repo',
             '-r',
-            help='add remote repo to push to',
-            dest='add_repo'
+            help='set remote repo to push to',
+            dest='set_repo'
         )
 
     def validate(self):
@@ -84,7 +84,7 @@ class CommandLine(object):
             # self.args.ignore, # TODO: will be implemented at 0.2v
             self.args.status,
             self.args.commit,
-            self.args.add_repo,
+            self.args.set_repo,
         ]
         if self._has_conflicts(conflicting_arguments):
             raise ValidationError('Two or more commands are in conflict')
@@ -127,8 +127,8 @@ class CommandLine(object):
             self.commands.commit(self.args.commit)
             return
 
-        if self.args.add_repo:
-            self.commands.add_repo(self.args.add_repo)
+        if self.args.set_repo:
+            self.commands.set_repo(self.args.set_repo)
             return
 
         self.parser.print_help()
