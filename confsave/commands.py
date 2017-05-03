@@ -24,8 +24,9 @@ class Commands(object):
             if not endpoint.is_link():
                 print(endpoint.path)
 
-    def ignore(self, filename):
-        pass
+    # TODO: will be implemented at 0.2v
+    # def ignore(self, filename):
+    #     pass
 
     def show_status(self):
         self._init_repo()
@@ -42,5 +43,5 @@ class Commands(object):
     def push(self):
         pass
 
-    def add_repo(self):
+    def add_repo(self, remote):
         pass

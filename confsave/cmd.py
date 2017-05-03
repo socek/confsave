@@ -11,6 +11,10 @@ class ValidationError(Exception):
         self.message = message
 
 
+class EmptyValue(object):
+    pass
+
+
 class CommandLine(object):
 
     def __init__(self, app):
@@ -45,6 +49,25 @@ class CommandLine(object):
             action='store_true',
             help='show status of tracked files',
             dest='status')
+        self.parser.add_argument(
+            '--commit',
+            '-c',
+            nargs='?',
+            const=EmptyValue(),
+            help='commit changes to the repo',
+            dest='commit')
+        self.parser.add_argument(
+            '--push',
+            '-p',
+            action='store_true',
+            help='push changes to a remote repo',
+            dest='push')
+        self.parser.add_argument(
+            '--add-repo',
+            '-r',
+            help='add remote repo to push to',
+            dest='add_repo'
+        )
 
     def validate(self):
         """
@@ -64,8 +87,11 @@ class CommandLine(object):
         conflicting_arguments = [
             self.args.add,
             self.args.list,
-            self.args.ignore,
+            # self.args.ignore, # TODO: will be implemented at 0.2v
             self.args.status,
+            self.args.commit,
+            self.args.push,
+            self.args.add_repo,
         ]
         if self._has_conflicts(conflicting_arguments):
             raise ValidationError('Two or more commands are in conflict')
@@ -95,12 +121,25 @@ class CommandLine(object):
             self.commands.show_list()
             return
 
-        if self.args.ignore:
-            self.commands.ignore(self.args.ignore)
-            return
+        # TODO: will be implemented at 0.2v
+        # if self.args.ignore:
+        #     self.commands.ignore(self.args.ignore)
+        #     return
 
         if self.args.status:
             self.commands.show_status()
+            return
+
+        if self.args.commit:
+            self.commands.commit(self.args.commit)
+            return
+
+        if self.args.push:
+            self.commands.push()
+            return
+
+        if self.args.add_repo:
+            self.commands.add_repo(self.args.add_repo)
             return
 
         self.parser.print_help()

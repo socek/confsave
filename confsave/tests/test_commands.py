@@ -24,10 +24,11 @@ class TestCommands(object):
         """
         commands.show_list()
 
-    def test_ignore(self, commands):
-        """
-        """
-        commands.ignore('filename')
+    # TODO: will be implemented at 0.2v
+    # def test_ignore(self, commands):
+    #    """
+    #    """
+    #    commands.ignore('filename')
 
     def test_status(self, commands):
         """

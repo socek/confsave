@@ -115,8 +115,11 @@ class TestCommandParser(object):
         [
             ('add', lambda commands: commands.add, lambda args: (args.add,)),
             ('list', lambda commands: commands.show_list, lambda args: ()),
-            ('ignore', lambda commands: commands.ignore, lambda args: (args.ignore,)),
+            # ('ignore', lambda commands: commands.ignore, lambda args: (args.ignore,)),
             ('status', lambda commands: commands.show_status, lambda args: ()),
+            ('commit', lambda commands: commands.commit, lambda args: (args.commit,)),
+            ('push', lambda commands: commands.push, lambda args: ()),
+            ('add_repo', lambda commands: commands.add_repo, lambda args: (args.add_repo,)),
         ]
     )
     def test_run_command(self, cmd, mcommands, arg, command, args):
@@ -128,6 +131,9 @@ class TestCommandParser(object):
         cmd.args.list = False
         cmd.args.ignore = None
         cmd.args.status = False
+        cmd.args.commit = None
+        cmd.args.push = False
+        cmd.args.add_repo = None
 
         setattr(cmd.args, arg, sentinel.value)
 
@@ -145,6 +151,9 @@ class TestCommandParser(object):
         cmd.args.list = False
         cmd.args.ignore = None
         cmd.args.status = False
+        cmd.args.commit = None
+        cmd.args.push = False
+        cmd.args.add_repo = None
 
         cmd.parser = MagicMock()
 
@@ -209,7 +218,15 @@ class TestCommandParser(object):
 
         cmd._validate_conflicts()
 
-        mhas_conflicts.assert_called_once_with([cmd.args.add, cmd.args.list, cmd.args.ignore, cmd.args.status, ])
+        mhas_conflicts.assert_called_once_with([
+            cmd.args.add,
+            cmd.args.list,
+            # cmd.args.ignore,
+            cmd.args.status,
+            cmd.args.commit,
+            cmd.args.push,
+            cmd.args.add_repo,
+        ])
 
     def test_validate_conflicts_when_conflict_found(self, cmd, mhas_conflicts):
         """
@@ -221,7 +238,15 @@ class TestCommandParser(object):
         with raises(ValidationError):
             cmd._validate_conflicts()
 
-        mhas_conflicts.assert_called_once_with([cmd.args.add, cmd.args.list, cmd.args.ignore, cmd.args.status, ])
+        mhas_conflicts.assert_called_once_with([
+            cmd.args.add,
+            cmd.args.list,
+            # cmd.args.ignore,
+            cmd.args.status,
+            cmd.args.commit,
+            cmd.args.push,
+            cmd.args.add_repo,
+        ])
 
     def test_validate_when_no_errors(self, cmd, mvalidate_conflicts, mvalidate_add):
         """
