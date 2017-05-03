@@ -118,7 +118,6 @@ class TestCommandParser(object):
             # ('ignore', lambda commands: commands.ignore, lambda args: (args.ignore,)),
             ('status', lambda commands: commands.show_status, lambda args: ()),
             ('commit', lambda commands: commands.commit, lambda args: (args.commit,)),
-            ('push', lambda commands: commands.push, lambda args: ()),
             ('add_repo', lambda commands: commands.add_repo, lambda args: (args.add_repo,)),
         ]
     )
@@ -132,7 +131,6 @@ class TestCommandParser(object):
         cmd.args.ignore = None
         cmd.args.status = False
         cmd.args.commit = None
-        cmd.args.push = False
         cmd.args.add_repo = None
 
         setattr(cmd.args, arg, sentinel.value)
@@ -152,7 +150,6 @@ class TestCommandParser(object):
         cmd.args.ignore = None
         cmd.args.status = False
         cmd.args.commit = None
-        cmd.args.push = False
         cmd.args.add_repo = None
 
         cmd.parser = MagicMock()
@@ -224,7 +221,6 @@ class TestCommandParser(object):
             # cmd.args.ignore,
             cmd.args.status,
             cmd.args.commit,
-            cmd.args.push,
             cmd.args.add_repo,
         ])
 
@@ -244,7 +240,6 @@ class TestCommandParser(object):
             # cmd.args.ignore,
             cmd.args.status,
             cmd.args.commit,
-            cmd.args.push,
             cmd.args.add_repo,
         ])
 

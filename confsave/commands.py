@@ -38,9 +38,7 @@ class Commands(object):
     def commit(self, message=None):
         # todo: should also add config file
         # should make proper message
-        pass
-
-    def push(self):
+        # should push
         pass
 
     def add_repo(self, remote):

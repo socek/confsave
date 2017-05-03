@@ -57,12 +57,6 @@ class CommandLine(object):
             help='commit changes to the repo',
             dest='commit')
         self.parser.add_argument(
-            '--push',
-            '-p',
-            action='store_true',
-            help='push changes to a remote repo',
-            dest='push')
-        self.parser.add_argument(
             '--add-repo',
             '-r',
             help='add remote repo to push to',
@@ -90,7 +84,6 @@ class CommandLine(object):
             # self.args.ignore, # TODO: will be implemented at 0.2v
             self.args.status,
             self.args.commit,
-            self.args.push,
             self.args.add_repo,
         ]
         if self._has_conflicts(conflicting_arguments):
@@ -132,10 +125,6 @@ class CommandLine(object):
 
         if self.args.commit:
             self.commands.commit(self.args.commit)
-            return
-
-        if self.args.push:
-            self.commands.push()
             return
 
         if self.args.add_repo:
