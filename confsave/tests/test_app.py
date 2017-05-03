@@ -8,6 +8,7 @@ class SampleApplication(Application):
 
     class Settings(Application.Settings):
         REPO_PATH = '~/.creazyrepopath'
+        HOME_PATH = '~'
         CONFIG_FILENAME = '.confsave-xxx.yaml'
 
 
@@ -45,3 +46,12 @@ class TestApplication(object):
         assert app.get_config_path() == mjoin.return_value
         mjoin.assert_called_once_with(mget_repo_path.return_value, '.confsave-xxx.yaml')
         mget_repo_path.assert_called_once_with()
+
+    def test_get_home_path(self, mexpanduser):
+        """
+        .get_home_path should return absolute home path to the home directory provided by settings
+        """
+        app = SampleApplication()
+
+        assert app.get_home_path() == mexpanduser.return_value
+        mexpanduser.assert_called_once_with('~')
