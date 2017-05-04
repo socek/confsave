@@ -7,8 +7,8 @@ from confsave.repo import LocalRepo
 class Application(object):
 
     class Settings(object):
-        REPO_PATH = '/home/socek/projects/confsave/fakehome/.confsave'
-        HOME_PATH = '/home/socek/projects/confsave/fakehome'
+        REPO_PATH = '~/.confsave'
+        HOME_PATH = '~'
         CONFIG_FILENAME = '.confsave.yaml'
 
     def __init__(self):
