@@ -1,3 +1,4 @@
+from os.path import abspath
 from os.path import expanduser
 from os.path import join
 
@@ -19,13 +20,13 @@ class Application(object):
         """
         path to a local repo
         """
-        return expanduser(self.settings.REPO_PATH)
+        return abspath(expanduser(self.settings.REPO_PATH))
 
     def get_home_path(self):
         """
         path to a user home directory
         """
-        return expanduser(self.settings.HOME_PATH)
+        return abspath(expanduser(self.settings.HOME_PATH))
 
     def get_config_path(self):
         """

@@ -2,6 +2,7 @@
 * validate if remote is set before commit
 * Make ability to add whole folders.
 * Initalize local links from repo (restore mechanism)
+* commit changed files
 
 0.3
 * Create repo on server and give a link for it

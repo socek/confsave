@@ -21,6 +21,11 @@ class TestApplication(object):
             yield mock
 
     @yield_fixture
+    def mabspath(self):
+        with patch('confsave.app.abspath') as mock:
+            yield mock
+
+    @yield_fixture
     def mget_repo_path(self):
         with patch.object(SampleApplication, 'get_repo_path') as mock:
             yield mock
@@ -30,13 +35,14 @@ class TestApplication(object):
         with patch('confsave.app.join') as mock:
             yield mock
 
-    def test_get_repo_path(self, mexpanduser):
+    def test_get_repo_path(self, mexpanduser, mabspath):
         """
         .get_repo_path should return path to a local repo using path from settings
         """
         app = SampleApplication()
-        assert app.get_repo_path() == mexpanduser.return_value
+        assert app.get_repo_path() == mabspath.return_value
         mexpanduser.assert_called_once_with('~/.creazyrepopath')
+        mabspath.assert_called_once_with(mexpanduser.return_value)
 
     def test_get_config_path(self, mjoin, mget_repo_path):
         """
@@ -48,14 +54,15 @@ class TestApplication(object):
         mjoin.assert_called_once_with(mget_repo_path.return_value, '.confsave-xxx.yaml')
         mget_repo_path.assert_called_once_with()
 
-    def test_get_home_path(self, mexpanduser):
+    def test_get_home_path(self, mexpanduser, mabspath):
         """
         .get_home_path should return absolute home path to the home directory provided by settings
         """
         app = SampleApplication()
 
-        assert app.get_home_path() == mexpanduser.return_value
+        assert app.get_home_path() == mabspath.return_value
         mexpanduser.assert_called_once_with('~')
+        mabspath.assert_called_once_with(mexpanduser.return_value)
 
     @mark.parametrize(
         'repo_path, home_path, config_filename',
