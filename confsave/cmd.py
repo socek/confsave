@@ -60,6 +60,25 @@ class CommandLine(object):
             dest='set_repo'
         )
 
+        self.parser.add_argument(
+            '--repo-path',
+            '-1',
+            help='path to the config repository',
+            dest='repo_path',
+        )
+        self.parser.add_argument(
+            '--home-path',
+            '-2',
+            help='path to the home directory',
+            dest='home_path',
+        )
+        self.parser.add_argument(
+            '--config_filename',
+            '-3',
+            help='name of file to store the ConfSave config',
+            dest='config_filename',
+        )
+
     def validate(self):
         """
         Validate if arguments provided by command line have any errors.
@@ -130,12 +149,22 @@ class CommandLine(object):
 
         self.parser.print_help()
 
+    def update_settings(self):
+        """
+        Update settings from command line arguments.
+        """
+        self.app.update_settings(
+            repo_path=self.args.repo_path,
+            home_path=self.args.home_path,
+            config_filename=self.args.config_filename)
+
     def run(self):
         """
         Run whole application with command line interface.
         """
         self.initalize_parser()
         if self.validate():
+            self.update_settings()
             self.run_command()
         else:
             self.parser.print_help()

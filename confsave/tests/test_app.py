@@ -1,4 +1,5 @@
 from mock import patch
+from pytest import mark
 from pytest import yield_fixture
 
 from confsave.app import Application
@@ -55,3 +56,29 @@ class TestApplication(object):
 
         assert app.get_home_path() == mexpanduser.return_value
         mexpanduser.assert_called_once_with('~')
+
+    @mark.parametrize(
+        'repo_path, home_path, config_filename',
+        (
+            [None, None, None],
+            [True, None, None],
+            [True, True, None],
+            [True, None, True],
+        )
+    )
+    def test_update_settings(self, repo_path, home_path, config_filename):
+        """
+        .update_settings should update application settings when values are set
+        """
+        app = SampleApplication()
+
+        app.update_settings(repo_path, home_path, config_filename)
+
+        # tese asserts are evil, isn't they?
+        assert app.settings.REPO_PATH == repo_path if repo_path else app.settings.REPO_PATH != repo_path
+        assert app.settings.HOME_PATH == home_path if home_path else app.settings.HOME_PATH != home_path
+        assert (
+            app.settings.CONFIG_FILENAME == config_filename
+            if config_filename else
+            app.settings.CONFIG_FILENAME != config_filename
+        )

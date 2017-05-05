@@ -1,10 +1,5 @@
-0.1
-[OK] commit & push
-[OK] add repo path
-
 0.2
 * validate if remote is set before commit
-* change settings by cmd
 * Make ability to add whole folders.
 * Initalize local links from repo (restore mechanism)
 

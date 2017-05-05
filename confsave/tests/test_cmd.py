@@ -72,6 +72,11 @@ class TestCommandParser(object):
         with patch('confsave.cmd.print') as mock:
             yield mock
 
+    @yield_fixture
+    def mupdate_settings(self, cmd):
+        with patch.object(cmd, 'update_settings') as mock:
+            yield mock
+
     def test_parser_initalization(self, cmd, margument_parser):
         """
         .initalize_parser should create proper ArgumentParser.
@@ -82,7 +87,7 @@ class TestCommandParser(object):
         margument_parser.assert_called_once()
         assert cmd.parser == margument_parser.return_value
 
-    def test_running_with_no_errors(self, cmd, minitalize_parser, mvalidate, mrun_command):
+    def test_running_with_no_errors(self, cmd, minitalize_parser, mvalidate, mrun_command, mupdate_settings):
         """
         .run should initalize parser, validate commands and where there is no errors there, run the command.
         """
@@ -91,6 +96,7 @@ class TestCommandParser(object):
 
         cmd.run()
 
+        mupdate_settings.assert_called_once_with()
         minitalize_parser.assert_called_once_with()
         mvalidate.assert_called_once_with()
         mrun_command.assert_called_once_with()
@@ -264,6 +270,20 @@ class TestCommandParser(object):
             call('Error: testing'),
             call(),
         ]
+
+    def test_update_settings(self, cmd, app):
+        """
+        .update_settings should pass the command line arguments to Application.update_settings
+        """
+        cmd.args = MagicMock()
+
+        cmd.update_settings()
+
+        app.update_settings.assert_called_once_with(
+            repo_path=cmd.args.repo_path,
+            home_path=cmd.args.home_path,
+            config_filename=cmd.args.config_filename
+        )
 
 
 class TestRun(object):

@@ -32,3 +32,16 @@ class Application(object):
         path to a config file in local repo
         """
         return join(self.get_repo_path(), self.settings.CONFIG_FILENAME)
+
+    def update_settings(self, repo_path=None, home_path=None, config_filename=None):
+        """
+        Update settings values.
+        """
+        if repo_path:
+            self.settings.REPO_PATH = repo_path
+
+        if home_path:
+            self.settings.HOME_PATH = home_path
+
+        if config_filename:
+            self.settings.CONFIG_FILENAME = config_filename
