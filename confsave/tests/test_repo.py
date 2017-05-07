@@ -226,6 +226,15 @@ class TestLocalRepo(object):
 
         mgit.create_remote.assert_called_once_with(repo.REMOTE_NAME, sentinel.remote_path)
 
+    def test_get_remote_when_not_existing_and_without_remote_path(self, repo, mgit):
+        """
+        ._get_remote should create new remote when it is not existing
+        """
+        mgit.remotes = []
+
+        assert repo._get_remote(None) is None
+        assert not mgit.create_remote.called
+
     def test_get_remote_when_existing(self, repo, mgit):
         """
         ._get_remote should get existing remote
@@ -321,3 +330,14 @@ class TestLocalRepo(object):
         mget_remote.assert_called_once_with(None)
         mgit.index.commit.assert_called_once_with(sentinel.message)
         remote.push.assert_called_once_with()
+
+    def test_commit_when_no_repo(self, repo, mget_remote, mgit):
+        """
+        .commit should commit files added to the index, but should not raise an error when no remote repo is set.
+        """
+        mget_remote.return_value = None
+
+        repo.commit(None)
+
+        mget_remote.assert_called_once_with(None)
+        mgit.index.commit.assert_called_once_with(None)

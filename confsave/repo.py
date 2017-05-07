@@ -74,10 +74,13 @@ class LocalRepo(object):
 
     def _get_remote(self, remote_path):
         """
-        Create link to the remote or use already existing one.
+        Create link to the remote or use already existing one. Return None if it's not possible.
         """
         if self.REMOTE_NAME not in [remote.name for remote in self.git.remotes]:
-            return self.git.create_remote(self.REMOTE_NAME, remote_path)
+            if remote_path:
+                return self.git.create_remote(self.REMOTE_NAME, remote_path)
+            else:
+                return None
         else:
             return self.git.remotes[self.REMOTE_NAME]
 
@@ -111,11 +114,10 @@ class LocalRepo(object):
 
     def commit(self, message):
         """
-        Commit files added to the index and push them to the repo.
+        Commit files added to the index and push them to the repo if it is set.
         """
-        remote = self._get_remote(None)
-        # at this point the remote should be avalible
-        # TODO: make proper error message
-
         self.git.index.commit(message)
-        remote.push()
+
+        remote = self._get_remote(None)
+        if remote:
+            remote.push()
