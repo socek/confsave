@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ## 0.2.0 - [Unreleased]
 ### Added
 - Application.Settings can be changed by the command line interface
+- Add Command can now add folders to the repo.
 
 ### Changed
 - Commit command without remote repo set will not break the command. It will just commit without pushing it.

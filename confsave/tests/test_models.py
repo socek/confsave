@@ -10,6 +10,7 @@ from mock import MagicMock
 from mock import patch
 from pytest import fixture
 from pytest import mark
+from pytest import yield_fixture
 
 from confsave.models import Endpoint
 
@@ -19,6 +20,21 @@ class TestEndpoint(object):
     @fixture
     def app(self):
         return MagicMock()
+
+    @yield_fixture
+    def mget_folders_paths(self):
+        with patch.object(Endpoint, 'get_folders_paths') as mock:
+            yield mock
+
+    @yield_fixture
+    def mexists(self):
+        with patch('confsave.models.exists') as mock:
+            yield mock
+
+    @yield_fixture
+    def mmkdir(self):
+        with patch('confsave.models.mkdir') as mock:
+            yield mock
 
     def test_init(self, app):
         """
@@ -85,9 +101,9 @@ class TestEndpoint(object):
             '/tmp/fake/.config/chromium',
         ]
 
-    def test_make_paths(self, app):
+    def test_make_foleders(self, app):
         """
-        .make_paths should create all needed folders for this file in the local
+        .make_foleders should create all needed folders for this file in the local
         repo
         """
         path = NamedTemporaryFile().name
@@ -104,9 +120,23 @@ class TestEndpoint(object):
             endpoint.make_folders()
         assert exists(dirname(repo_path))
 
+    def test_make_foleders_when_folder_exists(self, app, mget_folders_paths, mexists, mmkdir):
+        """
+        .make_foleders should do nothing when the folder is already existing
+        """
+        endpoint = Endpoint(app, 'path')
+        mget_folders_paths.return_value = ['spath']
+        mexists.return_value = True
+
+        endpoint.make_folders()
+
+        mget_folders_paths.assert_called_once_with()
+        mexists.assert_called_once_with('spath')
+        assert not mmkdir.called
+
     def test_add_to_repo(self, app):
         """
-        .add_to_repo should copy local file to local repo and create a symlink
+        .add_to_repo should move local file to local repo and create a symlink
         in the old place
         """
         repo_path = NamedTemporaryFile().name
@@ -144,3 +174,35 @@ class TestEndpoint(object):
                 endpoint.add_to_repo()
 
                 assert not msymlink.called
+
+    def test_add_to_repo_directory(self, app):
+        """
+        .add_to_repo should move local directory to local repo and create a symlink
+        in the old place
+        """
+        repo_path = NamedTemporaryFile().name
+        user_path = NamedTemporaryFile().name
+        local_dir = '.testfile'
+        local_dir_path = join(user_path, local_dir)
+        local_file = 'file.txt'
+        local_file_path = join(local_dir_path, local_file)
+
+        app.get_repo_path.return_value = repo_path
+        mkdir(user_path)
+        mkdir(local_dir_path)
+        mkdir(repo_path)
+        with open(local_file_path, 'w') as localfile:
+            localfile.write('testdata')
+
+        endpoint = Endpoint(app, local_dir_path)
+        assert not endpoint.is_link()
+
+        with patch.object(endpoint, '_get_user_path') as mock:
+            mock.return_value = user_path
+
+            endpoint.add_to_repo()
+
+            assert open(local_file_path).read() == 'testdata'
+            assert open(join(endpoint.get_repo_path(), local_file)).read() == 'testdata'
+            assert realpath(local_dir_path) == endpoint.get_repo_path()
+            assert endpoint.is_link()

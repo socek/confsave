@@ -1,14 +1,13 @@
 from os import mkdir
 from os import sep
 from os import symlink
-from os import unlink
 from os.path import abspath
 from os.path import dirname
 from os.path import exists
 from os.path import expanduser
 from os.path import islink
 from os.path import join
-from shutil import copyfile
+from shutil import move
 
 
 class Endpoint(object):
@@ -55,7 +54,8 @@ class Endpoint(object):
         create all needed folders for this file in the local
         """
         for path in self.get_folders_paths():
-            mkdir(path)
+            if not exists(path):
+                mkdir(path)
 
     def _get_user_path(self):
         """
@@ -65,11 +65,10 @@ class Endpoint(object):
 
     def add_to_repo(self):
         """
-        copy local file to local repo and create a symlink in the old place
+        move local file to local repo and create a symlink in the old place
         """
         if not self.is_link():
             self.make_folders()
-            copyfile(self.path, self.get_repo_path())
-            unlink(self.path)
+            move(self.path, self.get_repo_path())
             symlink(self.get_repo_path(), self.path)
             self.app.repo.add_endpoint_to_repo(self)

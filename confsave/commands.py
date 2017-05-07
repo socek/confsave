@@ -38,7 +38,7 @@ class Commands(object):
             if not endpoint.is_link():
                 print(endpoint.path)
 
-    # TODO: will be implemented at 0.2v
+    # TODO: will be implemented at 0.3v
     # def ignore(self, filename):
     #     pass
 

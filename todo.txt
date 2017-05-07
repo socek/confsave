@@ -1,5 +1,4 @@
 0.2
-* Make ability to add whole folders.
 * Initalize local links from repo (restore mechanism)
 
 0.3
