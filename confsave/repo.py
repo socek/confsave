@@ -116,6 +116,8 @@ class LocalRepo(object):
         """
         Commit files added to the index and push them to the repo if it is set.
         """
+        changes = [diff.a_path for diff in self.git.index.diff(None)]
+        self.git.index.add(changes)
         self.git.index.commit(message)
 
         remote = self._get_remote(None)

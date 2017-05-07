@@ -341,3 +341,16 @@ class TestLocalRepo(object):
 
         mget_remote.assert_called_once_with(None)
         mgit.index.commit.assert_called_once_with(None)
+
+    def test_commit_changes(self, repo, mget_remote, mgit, remote):
+        """
+        .commit should add all changes to the commit
+        """
+        diff1 = MagicMock()
+        diff2 = MagicMock()
+        mgit.index.diff.return_value = [diff1, diff2]
+
+        repo.commit(None)
+
+        mgit.index.diff.assert_called_once_with(None)
+        mgit.index.add.assert_called_once_with([diff1.a_path, diff2.a_path])
