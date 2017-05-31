@@ -1,3 +1,4 @@
+from datetime import datetime
 from os import mkdir
 from os import symlink
 from os.path import dirname
@@ -6,6 +7,7 @@ from os.path import join
 from os.path import realpath
 from tempfile import NamedTemporaryFile
 
+from freezegun import freeze_time
 from mock import MagicMock
 from mock import patch
 from pytest import fixture
@@ -128,9 +130,9 @@ class TestEndpoint(object):
         mget_folders_paths.return_value = ['spath']
         mexists.return_value = True
 
-        endpoint.make_folders()
+        endpoint.make_folders('root')
 
-        mget_folders_paths.assert_called_once_with()
+        mget_folders_paths.assert_called_once_with('root')
         mexists.assert_called_once_with('spath')
         assert not mmkdir.called
 
@@ -206,3 +208,37 @@ class TestEndpoint(object):
             assert open(join(endpoint.get_repo_path(), local_file)).read() == 'testdata'
             assert realpath(local_dir_path) == endpoint.get_repo_path()
             assert endpoint.is_link()
+
+    def test_backup_local_file(self, app):
+        """
+        ._backup_local_file should make backup folder, and move the local file to the
+        """
+        now = datetime(year=2013, month=2, day=22)
+        repo_path = NamedTemporaryFile().name
+        user_path = NamedTemporaryFile().name
+        backup_path = join(repo_path, 'backup')
+        local_file = '.testfile'
+        local_file_path = join(user_path, local_file)
+
+        app.get_repo_path.return_value = repo_path
+        app.get_backup_path.return_value = backup_path
+
+        mkdir(user_path)
+        mkdir(repo_path)
+        mkdir(backup_path)
+        with open(local_file_path, 'w') as localfile:
+            localfile.write('testdata')
+
+        endpoint = Endpoint(app, local_file_path)
+        assert not endpoint.is_link()
+
+        with patch.object(endpoint, '_get_user_path') as mock:
+            mock.return_value = user_path
+
+            with freeze_time(now):
+                endpoint._backup_local_file()
+
+                app.repo.create_backup.assert_called_once_with()
+                assert not exists(local_file_path)
+                assert open(endpoint.get_backup_path()).read() == 'testdata'
+

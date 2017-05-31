@@ -35,25 +35,33 @@ class Endpoint(object):
         userpath = self._get_user_path()
         return join(self.app.get_repo_path(), self.path[len(userpath) + 1:])
 
-    def get_folders_paths(self):
+    def get_backup_path(self):
+        """
+        get path for the file in the backup folder
+        """
+        userpath = self._get_user_path()
+        return join(self.app.get_backup_path(), self.path[len(userpath) + 1:])
+
+    def get_folders_paths(self, root=None):
         """"
         get list of all paths that needs to be created in order to copy local
         file to local repo
         """
+        root = root or self.app.get_repo_path()
         userpath = self._get_user_path()
         head = dirname(self.path[len(userpath) + 1:])
         paths = []
         while head != '' and head != sep:
-            paths.append(join(self.app.get_repo_path(), head))
+            paths.append(join(root, head))
             head = dirname(head)
 
         return reversed(paths)
 
-    def make_folders(self):
+    def make_folders(self, root=None):
         """
         create all needed folders for this file in the local
         """
-        for path in self.get_folders_paths():
+        for path in self.get_folders_paths(root):
             if not exists(path):
                 mkdir(path)
 
@@ -72,3 +80,11 @@ class Endpoint(object):
             move(self.path, self.get_repo_path())
             symlink(self.get_repo_path(), self.path)
             self.app.repo.add_endpoint_to_repo(self)
+
+    def _backup_local_file(self):
+        """
+        Backup local file.
+        """
+        self.app.repo.create_backup()
+        self.make_folders(self.app.get_backup_path())
+        move(self.path, self.get_backup_path())
