@@ -81,6 +81,15 @@ class Endpoint(object):
             symlink(self.get_repo_path(), self.path)
             self.app.repo.add_endpoint_to_repo(self)
 
+    def make_link(self):
+        """
+        Make symlink only and backup old data.
+        """
+        if not self.is_link():
+            if self.is_existing():
+                self._backup_local_file()
+            symlink(self.get_repo_path(), self.path)
+
     def _backup_local_file(self):
         """
         Backup local file.

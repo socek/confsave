@@ -38,6 +38,31 @@ class TestEndpoint(object):
         with patch('confsave.models.mkdir') as mock:
             yield mock
 
+    @yield_fixture
+    def mis_link(self):
+        with patch.object(Endpoint, 'is_link') as mock:
+            yield mock
+
+    @yield_fixture
+    def mis_existing(self):
+        with patch.object(Endpoint, 'is_existing') as mock:
+            yield mock
+
+    @yield_fixture
+    def mbackup_local_file(self):
+        with patch.object(Endpoint, '_backup_local_file') as mock:
+            yield mock
+
+    @yield_fixture
+    def mget_repo_path(self):
+        with patch.object(Endpoint, 'get_repo_path') as mock:
+            yield mock
+
+    @yield_fixture
+    def msymlink(self):
+        with patch('confsave.models.symlink') as mock:
+            yield mock
+
     def test_init(self, app):
         """
         Endpoint should accept app and path to a file.
@@ -164,18 +189,16 @@ class TestEndpoint(object):
             assert realpath(local_file_path) == endpoint.get_repo_path()
             assert endpoint.is_link()
 
-    def test_add_to_repo_when_already_added_to_repo(self, app):
+    def test_add_to_repo_when_already_added_to_repo(self, app, msymlink, mis_link):
         """
         .add_to_repo should do nothing, if the symlink is already created
         """
         endpoint = Endpoint(app, NamedTemporaryFile().name)
-        with patch.object(endpoint, 'is_link') as mis_link:
-            with patch('confsave.models.symlink') as msymlink:
-                mis_link.return_value = True
+        mis_link.return_value = True
 
-                endpoint.add_to_repo()
+        endpoint.add_to_repo()
 
-                assert not msymlink.called
+        assert not msymlink.called
 
     def test_add_to_repo_directory(self, app):
         """
@@ -242,3 +265,45 @@ class TestEndpoint(object):
                 assert not exists(local_file_path)
                 assert open(endpoint.get_backup_path()).read() == 'testdata'
 
+    @mark.parametrize(
+        'is_link, is_existing, should_backup, should_make_symlink',
+        [
+            (False, False, False, True),
+            (False, True, True, True),
+            (True, False, False, False),
+            (True, True, False, False)
+        ]
+    )
+    def test_make_link(
+        self,
+        app,
+        is_link,
+        is_existing,
+        should_backup,
+        should_make_symlink,
+        mis_link,
+        mis_existing,
+        mbackup_local_file,
+        msymlink,
+        mget_repo_path,
+    ):
+        """
+        .make_link should create symlink un user directory of a repo file.
+        """
+        mis_link.return_value = is_link
+        mis_existing.return_value = is_existing
+
+        endpoint = Endpoint(app, NamedTemporaryFile().name)
+
+        endpoint.make_link()
+
+        assert (
+            (mbackup_local_file.assert_called_once_with() or True)
+            if should_backup else
+            (not mbackup_local_file.called)
+        )
+        assert (
+            (msymlink.assert_called_once_with(mget_repo_path.return_value, endpoint.path) or True)
+            if should_make_symlink else
+            (not msymlink.called)
+        )

@@ -13,6 +13,7 @@ class SampleApplication(Application):
         REPO_PATH = '~/.creazyrepopath'
         HOME_PATH = '~'
         CONFIG_FILENAME = '.confsave-xxx.yaml'
+        GIT_IGNORE = '.proper-git-ignore-file'
 
 
 class TestApplication(object):
@@ -67,21 +68,21 @@ class TestApplication(object):
         mabspath.assert_called_once_with(mexpanduser.return_value)
 
     @mark.parametrize(
-        'repo_path, home_path, config_filename',
+        'repo_path, home_path, config_filename, backup_name',
         (
-            [None, None, None],
-            [True, None, None],
-            [True, True, None],
-            [True, None, True],
+            [None, None, None, None, ],
+            [True, None, None, None, ],
+            [True, True, None, True, ],
+            [True, None, True, True, ],
         )
     )
-    def test_update_settings(self, repo_path, home_path, config_filename):
+    def test_update_settings(self, repo_path, home_path, config_filename, backup_name):
         """
         .update_settings should update application settings when values are set
         """
         app = SampleApplication()
 
-        app.update_settings(repo_path, home_path, config_filename)
+        app.update_settings(repo_path, home_path, config_filename, backup_name)
 
         # tese asserts are evil, isn't they?
         assert app.settings.REPO_PATH == repo_path if repo_path else app.settings.REPO_PATH != repo_path
@@ -91,6 +92,7 @@ class TestApplication(object):
             if config_filename else
             app.settings.CONFIG_FILENAME != config_filename
         )
+        assert app.settings.BACKUP_NAME == backup_name if backup_name else app.settings.BACKUP_NAME != backup_name
 
     def test_get_backup_path(self, mget_repo_path, mjoin):
         """
@@ -104,3 +106,12 @@ class TestApplication(object):
                 mget_repo_path.return_value,
                 'backup_12_05_03',
             )
+
+    def test_get_gitignore_path(self, mget_repo_path):
+        """
+        .get_gitignore_path should return proper path to a .gitignore file in main repository's path
+        """
+        app = SampleApplication()
+        mget_repo_path.return_value = "something"
+
+        assert app.get_gitignore_path() == 'something/.proper-git-ignore-file'
