@@ -1,3 +1,5 @@
+from datetime import datetime
+from freezegun import freeze_time
 from mock import patch
 from pytest import mark
 from pytest import yield_fixture
@@ -89,3 +91,16 @@ class TestApplication(object):
             if config_filename else
             app.settings.CONFIG_FILENAME != config_filename
         )
+
+    def test_get_backup_path(self, mget_repo_path, mjoin):
+        """
+        .get_backup_path should return backup path with local date
+        """
+        app = SampleApplication()
+        now = datetime(year=2012, month=5, day=3)
+        with freeze_time(now):
+            assert app.get_backup_path() == mjoin.return_value
+            mjoin.assert_called_once_with(
+                mget_repo_path.return_value,
+                'backup_12_05_03',
+            )

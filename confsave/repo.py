@@ -1,3 +1,4 @@
+from os import mkdir
 from os.path import exists
 from yaml import dump
 from yaml import load
@@ -123,3 +124,27 @@ class LocalRepo(object):
         remote = self._get_remote(None)
         if remote:
             remote.push()
+
+    def add_ignore(self, path):
+        """
+        Add ignore path if not in the ignore file already.
+        """
+        ignored = open(self.app.get_gitignore_path()).readlines() if exists(self.app.get_gitignore_path()) else []
+        ignored = [line.strip() for line in ignored]
+        if path not in ignored:
+            ignored.append(path)
+            ignored.sort()
+        with open(self.app.get_gitignore_path(), 'w') as file:
+            file.write('\n'.join(ignored))
+        self.git.index.add([self.app.get_gitignore_path()])
+
+    def create_backup(self):
+        """
+        Create backup dir if it does not exists. Add backup to gitignore.
+        """
+        path = self.app.get_backup_path()
+        if exists(path):
+            return
+
+        mkdir(path)
+        self.add_ignore(self.app.settings.BACKUP_NAME + '_*')

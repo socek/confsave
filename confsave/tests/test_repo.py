@@ -1,4 +1,5 @@
 from os import mkdir
+from os.path import exists
 from os.path import join
 from tempfile import NamedTemporaryFile
 
@@ -73,6 +74,11 @@ class TestLocalRepo(object):
     @yield_fixture
     def mwrite_config(self, repo):
         with patch.object(repo, 'write_config') as mock:
+            yield mock
+
+    @yield_fixture
+    def madd_ignore(self, repo):
+        with patch.object(repo, 'add_ignore') as mock:
             yield mock
 
     def test_init(self, repo, app):
@@ -354,3 +360,53 @@ class TestLocalRepo(object):
 
         mgit.index.diff.assert_called_once_with(None)
         mgit.index.add.assert_called_once_with([diff1.a_path, diff2.a_path])
+
+    def test_add_ignore_when_file_not_exists(self, repo, app, existing_repo_path, mgit):
+        """
+        .add_ignore should create proper .gitignore file
+        """
+        gitignore_path = join(existing_repo_path, '.gitignore')
+        app.get_gitignore_path.return_value = gitignore_path
+        repo.add_ignore('something')
+
+        assert open(gitignore_path).read() == 'something'
+
+    def test_add_ignore_when_adding_many_files(self, repo, app, existing_repo_path, mgit):
+        """
+        .add_ignore should sort inserted paths
+        """
+        gitignore_path = join(existing_repo_path, '.gitignore')
+        app.get_gitignore_path.return_value = gitignore_path
+        repo.add_ignore('something')
+        repo.add_ignore('aomething')
+        repo.add_ignore('zomething')
+        repo.add_ignore('something')
+        repo.add_ignore('comething')
+
+        assert open(gitignore_path).read() == 'aomething\ncomething\nsomething\nzomething'
+
+    def test_add_ignore_git_add(self, repo, app, existing_repo_path, mgit):
+        """
+        .add_ignore should add .gitignore to the git repo
+        """
+        gitignore_path = join(existing_repo_path, '.gitignore')
+        app.get_gitignore_path.return_value = gitignore_path
+        repo.add_ignore('something')
+
+        mgit.index.add.assert_called_once_with([gitignore_path])
+
+    def test_create_backup(self, repo, app, existing_repo_path, madd_ignore):
+        """
+        .create_backup should create backup dir only once
+        """
+        name = 'backup'
+        path = join(existing_repo_path, name)
+        app.settings.BACKUP_NAME = name
+        app.get_backup_path.return_value = path
+
+        repo.create_backup()
+        repo.create_backup()
+
+        madd_ignore.assert_called_once_with(name + '_*')
+        assert exists(app.get_backup_path.return_value)
+

@@ -1,6 +1,7 @@
 from os.path import abspath
 from os.path import expanduser
 from os.path import join
+from datetime import datetime
 
 from confsave.repo import LocalRepo
 
@@ -10,7 +11,9 @@ class Application(object):
     class Settings(object):
         REPO_PATH = '~/.confsave'
         HOME_PATH = '~'
+        BACKUP_NAME = 'backup'
         CONFIG_FILENAME = '.confsave.yaml'
+        GIT_IGNORE = '.gitignore'
 
     def __init__(self):
         self.settings = self.Settings()
@@ -34,7 +37,20 @@ class Application(object):
         """
         return join(self.get_repo_path(), self.settings.CONFIG_FILENAME)
 
-    def update_settings(self, repo_path=None, home_path=None, config_filename=None):
+    def get_backup_path(self):
+        """
+        path to a backup dir
+        """
+        name = self.settings.BACKUP_NAME + '_' + datetime.now().strftime('%y_%m_%d')
+        return join(self.get_repo_path(), name)
+
+    def get_gitignore_path(self):
+        """
+        path to .gitignore file
+        """
+        return join(self.get_repo_path(), self.settings.GIT_IGNORE)
+
+    def update_settings(self, repo_path=None, home_path=None, config_filename=None, backup_name=None):
         """
         Update settings values.
         """
@@ -46,3 +62,8 @@ class Application(object):
 
         if config_filename:
             self.settings.CONFIG_FILENAME = config_filename
+
+        if backup_name:
+            self.settings.BACKUP_NAME = backup_name
+
+
