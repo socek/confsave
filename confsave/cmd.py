@@ -78,6 +78,13 @@ class CommandLine(object):
             help='name of file to store the ConfSave config',
             dest='config_filename',
         )
+        self.parser.add_argument(
+            '--populate',
+            '-p',
+            help='populate repo files into a user directory',
+            dest='populate',
+            action='store_true',
+        )
 
     def validate(self):
         """
@@ -101,6 +108,7 @@ class CommandLine(object):
             self.args.status,
             self.args.commit,
             self.args.set_repo,
+            self.args.populate,
         ]
         if self._has_conflicts(conflicting_arguments):
             raise ValidationError('Two or more commands are in conflict')
@@ -145,6 +153,10 @@ class CommandLine(object):
 
         if self.args.set_repo:
             self.commands.set_repo(self.args.set_repo)
+            return
+
+        if self.args.populate:
+            self.commands.populate()
             return
 
         self.parser.print_help()
