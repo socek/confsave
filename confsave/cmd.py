@@ -34,7 +34,7 @@ class CommandLine(object):
             action='store_true',
             help='list untracked files',
             dest='list')
-        # TODO: will be implemented at 0.2v
+        # TODO: will be implemented at 0.3v
         # self.parser.add_argument(
         #     '--ignore',
         #     '-i',
@@ -97,7 +97,7 @@ class CommandLine(object):
         conflicting_arguments = [
             self.args.add,
             self.args.list,
-            # self.args.ignore, # TODO: will be implemented at 0.2v
+            # self.args.ignore, # TODO: will be implemented at 0.3v
             self.args.status,
             self.args.commit,
             self.args.set_repo,
@@ -130,7 +130,7 @@ class CommandLine(object):
             self.commands.show_list()
             return
 
-        # TODO: will be implemented at 0.2v
+        # TODO: will be implemented at 0.3v
         # if self.args.ignore:
         #     self.commands.ignore(self.args.ignore)
         #     return
