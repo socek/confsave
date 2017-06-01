@@ -295,15 +295,17 @@ class TestEndpoint(object):
 
         endpoint = Endpoint(app, NamedTemporaryFile().name)
 
-        endpoint.make_link()
+        result = endpoint.make_link()
+        if should_backup:
+            mbackup_local_file.assert_called_once_with()
+            assert result['backuped']
+        else:
+            assert not mbackup_local_file.called
+            assert not result['backuped']
 
-        assert (
-            (mbackup_local_file.assert_called_once_with() or True)
-            if should_backup else
-            (not mbackup_local_file.called)
-        )
-        assert (
-            (msymlink.assert_called_once_with(mget_repo_path.return_value, endpoint.path) or True)
-            if should_make_symlink else
-            (not msymlink.called)
-        )
+        if should_make_symlink:
+            msymlink.assert_called_once_with(mget_repo_path.return_value, endpoint.path)
+            assert result['populated']
+        else:
+            assert not msymlink.called
+            assert not result['populated']
