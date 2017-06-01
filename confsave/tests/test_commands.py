@@ -3,6 +3,7 @@ from mock import call
 from mock import patch
 from mock import sentinel
 from pytest import fixture
+from pytest import mark
 from pytest import yield_fixture
 
 from confsave.commands import Commands
@@ -155,3 +156,34 @@ class TestCommands(object):
 
         minit_repo.assert_called_once_with()
         app.repo.set_remote.assert_called_once_with(sentinel.repo_path)
+
+    @mark.parametrize(
+        'populated, backuped',
+        [
+            (False, False),
+            (True, False),
+            (False, True),
+            (True, True),
+        ]
+    )
+    def test_populate(self, commands, minit_repo, app, mendpoint, populated, backuped, mprint):
+        """
+        .populate should populate for all the files listed in the config, and print proper result.
+        """
+        path = '/tmp/this/is/sample'
+        app.repo.config = dict(files=[path])
+        mendpoint.return_value.make_link.return_value = dict(populated=populated, backuped=backuped)
+
+        print(commands.populate)
+        print(commands.populate())
+
+        minit_repo.assert_called_once_with()
+        mendpoint.assert_called_once_with(app, path)
+        mendpoint.return_value.make_link.assert_called_once_with()
+        calls = []
+        if populated:
+            calls.append(call('Populated ' + path))
+        if backuped:
+            calls.append(call('    * Backup stored in: {}'.format(mendpoint.return_value.get_backup_path.return_value)))
+
+        assert mprint.call_args_list == calls

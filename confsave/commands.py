@@ -67,3 +67,16 @@ class Commands(object):
         """
         self._init_repo()
         self.app.repo.set_remote(remote)
+
+    def populate(self):
+        """
+        Populate repo files into a user directory.
+        """
+        self._init_repo()
+        for file in self.app.repo.config['files']:
+            endpoint = Endpoint(self.app, file)
+            result = endpoint.make_link()
+            if result['populated']:
+                print('Populated {}'.format(file))
+            if result['backuped']:
+                print('    * Backup stored in: {}'.format(endpoint.get_backup_path()))

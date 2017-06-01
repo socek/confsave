@@ -85,10 +85,15 @@ class Endpoint(object):
         """
         Make symlink only and backup old data.
         """
+        result = dict(populated=False, backuped=False)
         if not self.is_link():
             if self.is_existing():
                 self._backup_local_file()
+                result['backuped'] = True
             symlink(self.get_repo_path(), self.path)
+            result['populated'] = True
+
+        return result
 
     def _backup_local_file(self):
         """
