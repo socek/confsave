@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 (http://semver.org/).
 
 ## 0.3.0 - [Unreleased]
+### Fixed
+- Add will not allow to add paths from outside of user's folder
 
 ## 0.2.0 - 2017-06-02
 ### Added
