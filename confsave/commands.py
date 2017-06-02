@@ -7,6 +7,10 @@ class EmptyValue(object):
     pass
 
 
+class PathNotInUserPath(Exception):
+    pass
+
+
 class Commands(object):
 
     def __init__(self, app):
@@ -26,8 +30,11 @@ class Commands(object):
         """
         self._init_repo()
         endpoint = Endpoint(self.app, filename)
-        endpoint.add_to_repo()
-        self.app.repo.write_config()
+        if endpoint.is_in_user_path():
+            endpoint.add_to_repo()
+            self.app.repo.write_config()
+        else:
+            raise PathNotInUserPath()
 
     def show_list(self):
         """
