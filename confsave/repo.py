@@ -83,6 +83,9 @@ class LocalRepo(object):
             else:
                 return None
         else:
+            old_remote = self.git.remotes[self.REMOTE_NAME]
+            self.git.delete_remote(old_remote)
+            self.git.create_remote(self.REMOTE_NAME, remote_path)
             return self.git.remotes[self.REMOTE_NAME]
 
     def _create_remote_branch(self, remote):

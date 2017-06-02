@@ -1,4 +1,3 @@
 0.3
 * Create repo on server and give a link for it
 * ignore files (what for?)
-* Make ability to set remote more then once

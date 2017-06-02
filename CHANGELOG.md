@@ -6,7 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## 0.3.0 - [Unreleased]
 ### Fixed
-- Add will not allow to add paths from outside of user's folder
+- Add command will not allow to add paths from outside of user's folder
+- Set remote command will allow to set remote more then once
 
 ## 0.2.0 - 2017-06-02
 ### Added

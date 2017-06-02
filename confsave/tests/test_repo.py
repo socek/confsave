@@ -252,8 +252,9 @@ class TestLocalRepo(object):
         mgit.remotes = [remote]
 
         assert repo._get_remote(sentinel.remote_path) == remote
+        mgit.delete_remote.assert_called_once_with(remote)
 
-        assert not mgit.create_remote.called
+        mgit.create_remote.assert_called_once_with(repo.REMOTE_NAME, sentinel.remote_path)
 
     def test_set_remote_when_branch_not_created(
         self,
