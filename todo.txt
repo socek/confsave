@@ -1,6 +1,3 @@
-0.2
-* Initalize local links from repo (restore mechanism)
-
 0.3
 * Create repo on server and give a link for it
 * Do not allow to add files from outside the home folder
