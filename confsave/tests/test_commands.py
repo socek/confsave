@@ -4,11 +4,9 @@ from mock import patch
 from mock import sentinel
 from pytest import fixture
 from pytest import mark
-from pytest import raises
 from pytest import yield_fixture
 
 from confsave.commands import Commands
-from confsave.commands import PathNotInUserPath
 
 
 class TestCommands(object):
@@ -66,19 +64,22 @@ class TestCommands(object):
         mendpoint.return_value.add_to_repo.assert_called_once_with()  # 3
         app.repo.write_config.assert_called_once_with()  # 4
 
-    def test_add_on_error(self, commands, minit_repo, mendpoint, app):
+    def test_add_on_error(self, commands, minit_repo, mendpoint, app, mprint):
         """
         .add should raise an error when endpoint is not within the user's directory
         """
         mendpoint.return_value.is_in_user_path.return_value = False
 
-        with raises(PathNotInUserPath):
-            commands.add('filename')
+        commands.add('filename')
 
         minit_repo.assert_called_once_with()
         mendpoint.assert_called_once_with(app, 'filename')
         assert not mendpoint.return_value.add_to_repo.called
         assert not app.repo.write_config.called
+        mprint.assert_called_once_with('Path {0} is not in the user directory {1}'.format(
+            'filename',
+            mendpoint.return_value._get_user_path.return_value,
+        ))
 
     def test_show_list_when_endpoint_is_a_link(self, commands, mglob, mendpoint, mprint, app):
         """

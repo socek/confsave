@@ -34,7 +34,10 @@ class Commands(object):
             endpoint.add_to_repo()
             self.app.repo.write_config()
         else:
-            raise PathNotInUserPath()
+            print('Path {0} is not in the user directory {1}'.format(
+                filename,
+                endpoint._get_user_path()
+            ))
 
     def show_list(self):
         """
