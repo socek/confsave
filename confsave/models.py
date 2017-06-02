@@ -28,6 +28,12 @@ class Endpoint(object):
         """
         return islink(self.path)
 
+    def is_in_user_path(self):
+        """
+        Is this path in the user path?
+        """
+        return self._get_user_path() in self.path
+
     def get_repo_path(self):
         """
         get path for the file in the local repo

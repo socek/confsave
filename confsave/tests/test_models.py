@@ -39,6 +39,16 @@ class TestEndpoint(object):
             yield mock
 
     @yield_fixture
+    def msymlink(self):
+        with patch('confsave.models.symlink') as mock:
+            yield mock
+
+    @yield_fixture
+    def mexpanduser(self):
+        with patch('confsave.models.expanduser') as mock:
+            yield mock
+
+    @yield_fixture
     def mis_link(self):
         with patch.object(Endpoint, 'is_link') as mock:
             yield mock
@@ -59,8 +69,8 @@ class TestEndpoint(object):
             yield mock
 
     @yield_fixture
-    def msymlink(self):
-        with patch('confsave.models.symlink') as mock:
+    def mget_user_path(self):
+        with patch.object(Endpoint, '_get_user_path') as mock:
             yield mock
 
     def test_init(self, app):
@@ -128,7 +138,7 @@ class TestEndpoint(object):
             '/tmp/fake/.config/chromium',
         ]
 
-    def test_make_foleders(self, app):
+    def test_make_foleders(self, app, mget_user_path):
         """
         .make_foleders should create all needed folders for this file in the local
         repo
@@ -142,9 +152,8 @@ class TestEndpoint(object):
 
         assert not exists(dirname(repo_path))
         endpoint = Endpoint(app, endpoint_path)
-        with patch.object(endpoint, '_get_user_path') as mock:
-            mock.return_value = '/tmp/home'
-            endpoint.make_folders()
+        mget_user_path.return_value = '/tmp/home'
+        endpoint.make_folders()
         assert exists(dirname(repo_path))
 
     def test_make_foleders_when_folder_exists(self, app, mget_folders_paths, mexists, mmkdir):
@@ -161,7 +170,7 @@ class TestEndpoint(object):
         mexists.assert_called_once_with('spath')
         assert not mmkdir.called
 
-    def test_add_to_repo(self, app):
+    def test_add_to_repo(self, app, mget_user_path):
         """
         .add_to_repo should move local file to local repo and create a symlink
         in the old place
@@ -180,14 +189,13 @@ class TestEndpoint(object):
         endpoint = Endpoint(app, local_file_path)
         assert not endpoint.is_link()
 
-        with patch.object(endpoint, '_get_user_path') as mock:
-            mock.return_value = user_path
+        mget_user_path.return_value = user_path
 
-            endpoint.add_to_repo()
+        endpoint.add_to_repo()
 
-            assert open(endpoint.get_repo_path()).read() == 'testdata'
-            assert realpath(local_file_path) == endpoint.get_repo_path()
-            assert endpoint.is_link()
+        assert open(endpoint.get_repo_path()).read() == 'testdata'
+        assert realpath(local_file_path) == endpoint.get_repo_path()
+        assert endpoint.is_link()
 
     def test_add_to_repo_when_already_added_to_repo(self, app, msymlink, mis_link):
         """
@@ -200,7 +208,7 @@ class TestEndpoint(object):
 
         assert not msymlink.called
 
-    def test_add_to_repo_directory(self, app):
+    def test_add_to_repo_directory(self, app, mget_user_path):
         """
         .add_to_repo should move local directory to local repo and create a symlink
         in the old place
@@ -222,17 +230,16 @@ class TestEndpoint(object):
         endpoint = Endpoint(app, local_dir_path)
         assert not endpoint.is_link()
 
-        with patch.object(endpoint, '_get_user_path') as mock:
-            mock.return_value = user_path
+        mget_user_path.return_value = user_path
 
-            endpoint.add_to_repo()
+        endpoint.add_to_repo()
 
-            assert open(local_file_path).read() == 'testdata'
-            assert open(join(endpoint.get_repo_path(), local_file)).read() == 'testdata'
-            assert realpath(local_dir_path) == endpoint.get_repo_path()
-            assert endpoint.is_link()
+        assert open(local_file_path).read() == 'testdata'
+        assert open(join(endpoint.get_repo_path(), local_file)).read() == 'testdata'
+        assert realpath(local_dir_path) == endpoint.get_repo_path()
+        assert endpoint.is_link()
 
-    def test_backup_local_file(self, app):
+    def test_backup_local_file(self, app, mget_user_path):
         """
         ._backup_local_file should make backup folder, and move the local file to the
         """
@@ -255,15 +262,14 @@ class TestEndpoint(object):
         endpoint = Endpoint(app, local_file_path)
         assert not endpoint.is_link()
 
-        with patch.object(endpoint, '_get_user_path') as mock:
-            mock.return_value = user_path
+        mget_user_path.return_value = user_path
 
-            with freeze_time(now):
-                endpoint._backup_local_file()
+        with freeze_time(now):
+            endpoint._backup_local_file()
 
-                app.repo.create_backup.assert_called_once_with()
-                assert not exists(local_file_path)
-                assert open(endpoint.get_backup_path()).read() == 'testdata'
+            app.repo.create_backup.assert_called_once_with()
+            assert not exists(local_file_path)
+            assert open(endpoint.get_backup_path()).read() == 'testdata'
 
     @mark.parametrize(
         'is_link, is_existing, should_backup, should_make_symlink',
@@ -309,3 +315,22 @@ class TestEndpoint(object):
         else:
             assert not msymlink.called
             assert not result['populated']
+
+    @mark.parametrize(
+        'user_path, path, is_in_userpath',
+        [
+            ['/home/user', '/home/user/file.txt', True],
+            ['/home/user/file.txt', '/home/user', False],
+            ['/home/user', '/home/file.txt', False],
+            ['/home/user', '~/file.txt', True],
+        ]
+    )
+    def test_is_in_user_path(self, app, mget_user_path, mexpanduser, user_path, path, is_in_userpath):
+        """
+        .is_in_user_path should give the information if the endpoint has proper path, which is within user's directory
+        """
+        mget_user_path.return_value = user_path
+        mexpanduser.side_effect = lambda obj: obj.replace('~', user_path)
+        endpoint = Endpoint(app, path)
+
+        assert endpoint.is_in_user_path() == is_in_userpath
