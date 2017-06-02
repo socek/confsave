@@ -4,14 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning]
 (http://semver.org/).
 
-## 0.2.0 - [Unreleased]
+## 0.2.0 - 2017-06-02
 ### Added
 - Application.Settings can be changed by the command line interface
-- Add Command can now add folders to the repo.
+- Populate Command which allow to populate configs from the repo.
 
 ### Changed
 - Commit command without remote repo set will not break the command. It will just commit without pushing it.
 - Commit command is now adding all changes to the commit.
+- Add Command can now add folders to the repo.
 
 ## 0.1.0 - 2017-05-06
 ### Added

@@ -174,8 +174,7 @@ class TestCommands(object):
         app.repo.config = dict(files=[path])
         mendpoint.return_value.make_link.return_value = dict(populated=populated, backuped=backuped)
 
-        print(commands.populate)
-        print(commands.populate())
+        commands.populate()
 
         minit_repo.assert_called_once_with()
         mendpoint.assert_called_once_with(app, path)
