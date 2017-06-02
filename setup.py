@@ -14,7 +14,7 @@ install_requires = [
 if __name__ == '__main__':
     setup(
         name='confsave',
-        version='0.2',
+        version='0.3',
         description='Configuration Saver',
         url='https://github.com/socek/confsave',
         license='Apache License 2.0',
