@@ -77,16 +77,35 @@ class LocalRepo(object):
         """
         Create link to the remote or use already existing one. Return None if it's not possible.
         """
-        if self.REMOTE_NAME not in [remote.name for remote in self.git.remotes]:
-            if remote_path:
-                return self.git.create_remote(self.REMOTE_NAME, remote_path)
-            else:
-                return None
-        else:
-            old_remote = self.git.remotes[self.REMOTE_NAME]
-            self.git.delete_remote(old_remote)
-            self.git.create_remote(self.REMOTE_NAME, remote_path)
+        if self._get_remote_or_none() and remote_path:
+            self._delete_remote()
+
+        if (not self._get_remote_or_none()) and remote_path:
+            self._create_remote(remote_path)
+
+        return self._get_remote_or_none()
+
+    def _get_remote_or_none(self):
+        """
+        Get remote or return None if remote does not exists.
+        """
+        try:
             return self.git.remotes[self.REMOTE_NAME]
+        except (KeyError, IndexError):
+            return None
+
+    def _delete_remote(self):
+        """
+        Remove remote.
+        """
+        old_remote = self.git.remotes[self.REMOTE_NAME]
+        self.git.delete_remote(old_remote)
+
+    def _create_remote(self, remote_path):
+        """
+        Create remote with given remote_path.
+        """
+        self.git.create_remote(self.REMOTE_NAME, remote_path)
 
     def _create_remote_branch(self, remote):
         """

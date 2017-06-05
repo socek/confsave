@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from os import mkdir
 from os.path import exists
 from os.path import join
@@ -226,9 +227,9 @@ class TestLocalRepo(object):
         """
         ._get_remote should create new remote when it is not existing
         """
-        mgit.remotes = []
+        mgit.remotes = OrderedDict()
 
-        assert repo._get_remote(sentinel.remote_path) == mgit.create_remote.return_value
+        assert repo._get_remote(sentinel.remote_path) is None
 
         mgit.create_remote.assert_called_once_with(repo.REMOTE_NAME, sentinel.remote_path)
 
@@ -236,7 +237,7 @@ class TestLocalRepo(object):
         """
         ._get_remote should create new remote when it is not existing
         """
-        mgit.remotes = []
+        mgit.remotes = OrderedDict()
 
         assert repo._get_remote(None) is None
         assert not mgit.create_remote.called
@@ -250,6 +251,8 @@ class TestLocalRepo(object):
         remote = MagicMock()
         remote.name = repo.REMOTE_NAME
         mgit.remotes = [remote]
+        mgit.delete_remote.side_effect = lambda name: mgit.remotes.remove(name)
+        mgit.create_remote.side_effect = lambda name, path: mgit.remotes.append(remote)
 
         assert repo._get_remote(sentinel.remote_path) == remote
         mgit.delete_remote.assert_called_once_with(remote)
