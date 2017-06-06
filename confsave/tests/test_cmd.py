@@ -121,7 +121,7 @@ class TestCommandParser(object):
         [
             ('add', lambda commands: commands.add, lambda args: (args.add,)),
             ('list', lambda commands: commands.show_list, lambda args: ()),
-            # ('ignore', lambda commands: commands.ignore, lambda args: (args.ignore,)),
+            ('ignore', lambda commands: commands.ignore, lambda args: (args.ignore,)),
             ('status', lambda commands: commands.show_status, lambda args: ()),
             ('commit', lambda commands: commands.commit, lambda args: (args.commit,)),
             ('set_repo', lambda commands: commands.set_repo, lambda args: (args.set_repo,)),
@@ -226,7 +226,7 @@ class TestCommandParser(object):
         mhas_conflicts.assert_called_once_with([
             cmd.args.add,
             cmd.args.list,
-            # cmd.args.ignore,
+            cmd.args.ignore,
             cmd.args.status,
             cmd.args.commit,
             cmd.args.set_repo,
@@ -246,7 +246,7 @@ class TestCommandParser(object):
         mhas_conflicts.assert_called_once_with([
             cmd.args.add,
             cmd.args.list,
-            # cmd.args.ignore,
+            cmd.args.ignore,
             cmd.args.status,
             cmd.args.commit,
             cmd.args.set_repo,
