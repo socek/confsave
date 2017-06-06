@@ -14,6 +14,7 @@ class SampleApplication(Application):
         HOME_PATH = '~'
         CONFIG_FILENAME = '.confsave-xxx.yaml'
         GIT_IGNORE = '.proper-git-ignore-file'
+        CS_IGNORE = '.proper_cs_ignore'
 
 
 class TestApplication(object):
@@ -115,3 +116,12 @@ class TestApplication(object):
         mget_repo_path.return_value = "something"
 
         assert app.get_gitignore_path() == 'something/.proper-git-ignore-file'
+
+    def test_get_cs_ignore_path(self, mget_repo_path):
+        """
+        .get_cs_ignore_path should return proper path to a .cs_ignore file in main repository's path
+        """
+        app = SampleApplication()
+        mget_repo_path.return_value = "something"
+
+        assert app.get_cs_ignore_path() == 'something/.proper_cs_ignore'

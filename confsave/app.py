@@ -14,6 +14,7 @@ class Application(object):
         BACKUP_NAME = 'backup'
         CONFIG_FILENAME = '.confsave.yaml'
         GIT_IGNORE = '.gitignore'
+        CS_IGNORE = '.cs_ignore'
 
     def __init__(self):
         self.settings = self.Settings()
@@ -49,6 +50,12 @@ class Application(object):
         path to .gitignore file
         """
         return join(self.get_repo_path(), self.settings.GIT_IGNORE)
+
+    def get_cs_ignore_path(self):
+        """
+        path to "ignore listing of not added files" file.
+        """
+        return join(self.get_repo_path(), self.settings.CS_IGNORE)
 
     def update_settings(self, repo_path=None, home_path=None, config_filename=None, backup_name=None):
         """
