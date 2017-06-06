@@ -177,7 +177,7 @@ class LocalRepo(object):
         """
         hidden_files = []
         if exists(self.app.get_cs_ignore_path()):
-            hidden_files = [value.strip() for value in open(self.app.get_cs_ignore_path(), 'r').readlines()]
+            hidden_files = self.get_ignore_list()
 
         if name not in hidden_files:
             hidden_files.append(name)
@@ -185,3 +185,12 @@ class LocalRepo(object):
 
             open(self.app.get_cs_ignore_path(), 'w').write('\n'.join(hidden_files))
             self.git.index.add([self.app.get_cs_ignore_path()])
+
+    def get_ignore_list(self):
+        """
+        Get list of all hidden files for list command.
+        """
+        try:
+            return [value.strip() for value in open(self.app.get_cs_ignore_path(), 'r').readlines()]
+        except FileNotFoundError:
+            return []

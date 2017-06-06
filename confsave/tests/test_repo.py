@@ -440,3 +440,24 @@ class TestLocalRepo(object):
         assert open(tempfile).readlines() == result
 
         mgit.index.add.assert_called_once_with([tempfile])
+
+    @mark.parametrize(
+        'filedata, result',
+        [
+            [None, []],
+            ['elo', ['elo']],
+            ['elo\nsame', ['elo', 'same']],
+        ]
+    )
+    def test_get_ignore_list(self, repo, app, existing_repo_path, filedata, result):
+        """
+        .get_ignore_list should return list of hidden files stripped from whitespaces
+        """
+        tempfile = NamedTemporaryFile().name
+
+        app.get_cs_ignore_path.return_value = tempfile
+        if filedata:
+            with open(tempfile, 'w') as file:
+                file.write(filedata)
+
+        assert repo.get_ignore_list() == result
