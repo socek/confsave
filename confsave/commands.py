@@ -48,9 +48,12 @@ class Commands(object):
             if not endpoint.is_link():
                 print(endpoint.path)
 
-    # TODO: will be implemented at 0.3v
-    # def ignore(self, filename):
-    #     pass
+    def ignore(self, filename):
+        """
+        Add filename to ignore list.
+        """
+        self._init_repo()
+        self.app.repo.hide_file(filename)
 
     def show_status(self):
         """

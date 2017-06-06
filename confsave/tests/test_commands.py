@@ -104,11 +104,14 @@ class TestCommands(object):
         mendpoint.assert_called_once_with(app, 'first')
         mprint.assert_called_once_with(mendpoint.return_value.path)
 
-    # TODO: will be implemented at 0.2v
-    # def test_ignore(self, commands):
-    #    """
-    #    """
-    #    commands.ignore('filename')
+    def test_ignore(self, commands, app, minit_repo):
+        """
+        .ignore should add filename to ignore list
+        """
+        commands.ignore(sentinel.filename)
+
+        minit_repo.assert_called_once_with()
+        app.repo.hide_file(sentinel.filename)
 
     def test_status(self, commands, app, mprint, minit_repo):
         """
