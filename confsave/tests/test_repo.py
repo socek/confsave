@@ -8,6 +8,7 @@ from mock import MagicMock
 from mock import patch
 from mock import sentinel
 from pytest import fixture
+from pytest import mark
 from pytest import yield_fixture
 from yaml import dump
 from yaml import load
@@ -414,3 +415,28 @@ class TestLocalRepo(object):
         madd_ignore.assert_called_once_with(name + '_*')
         assert exists(app.get_backup_path.return_value)
 
+    @mark.parametrize(
+        'filedata, name, result',
+        [
+            [None, 'name', ['name']],
+            ['elo', 'name', ['elo\n', 'name']],
+            ['elo\nsame', 'name', ['elo\n', 'name\n', 'same']],
+        ]
+    )
+    def test_hide_file(self, repo, app, existing_repo_path, filedata, name, result, mgit):
+        """
+        .hide_file should add name into file.
+        """
+        tempfile = NamedTemporaryFile().name
+
+        app.get_cs_ignore_path.return_value = tempfile
+        if filedata:
+            with open(tempfile, 'w') as file:
+                file.write(filedata)
+
+        repo.hide_file(name)
+        repo.hide_file(name)  # verify not to append the same value twice
+
+        assert open(tempfile).readlines() == result
+
+        mgit.index.add.assert_called_once_with([tempfile])

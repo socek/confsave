@@ -170,3 +170,18 @@ class LocalRepo(object):
 
         mkdir(path)
         self.add_ignore(self.app.settings.BACKUP_NAME + '_*')
+
+    def hide_file(self, name):
+        """
+        Hide file for listing of not added files.
+        """
+        hidden_files = []
+        if exists(self.app.get_cs_ignore_path()):
+            hidden_files = [value.strip() for value in open(self.app.get_cs_ignore_path(), 'r').readlines()]
+
+        if name not in hidden_files:
+            hidden_files.append(name)
+            hidden_files.sort()
+
+            open(self.app.get_cs_ignore_path(), 'w').write('\n'.join(hidden_files))
+            self.git.index.add([self.app.get_cs_ignore_path()])
