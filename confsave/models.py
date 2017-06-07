@@ -34,19 +34,40 @@ class Endpoint(object):
         """
         return self._get_user_path() in self.path
 
+    def is_visible(self):
+        """
+        Is this endpoint visible for the show_list command?
+        """
+        return not (self.is_ignored() or self.is_link())
+
+    def is_ignored(self):
+        """
+        Is this endpoint ignored?
+        """
+        for ignore_path in self.app.repo.get_ignore_list():
+            print(ignore_path, self._get_relative_path())
+            if self._get_relative_path().startswith(ignore_path):
+                return True
+        return False
+
     def get_repo_path(self):
         """
         get path for the file in the local repo
         """
-        userpath = self._get_user_path()
-        return join(self.app.get_repo_path(), self.path[len(userpath) + 1:])
+        return join(self.app.get_repo_path(), self._get_relative_path())
 
     def get_backup_path(self):
         """
         get path for the file in the backup folder
         """
+        return join(self.app.get_backup_path(), self._get_relative_path())
+
+    def _get_relative_path(self):
+        """
+        get relative path for the file
+        """
         userpath = self._get_user_path()
-        return join(self.app.get_backup_path(), self.path[len(userpath) + 1:])
+        return self.path[len(userpath) + 1:]
 
     def get_folders_paths(self, root=None):
         """"

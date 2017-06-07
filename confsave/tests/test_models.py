@@ -54,6 +54,16 @@ class TestEndpoint(object):
             yield mock
 
     @yield_fixture
+    def mis_ignored(self):
+        with patch.object(Endpoint, 'is_ignored') as mock:
+            yield mock
+
+    @yield_fixture
+    def mget_relative_path(self):
+        with patch.object(Endpoint, '_get_relative_path') as mock:
+            yield mock
+
+    @yield_fixture
     def mis_existing(self):
         with patch.object(Endpoint, 'is_existing') as mock:
             yield mock
@@ -334,3 +344,43 @@ class TestEndpoint(object):
         endpoint = Endpoint(app, path)
 
         assert endpoint.is_in_user_path() == is_in_userpath
+
+    @mark.parametrize(
+        'is_link, is_ignored, result',
+        [
+            [False, False, True],
+            [True, False, False],
+            [False, True, False],
+            [True, True, False],
+        ]
+    )
+    def test_is_visible(self, app, mis_link, mis_ignored, is_link, is_ignored, result):
+        """
+        .is_visible should return False if endpoint is a link or it is ignored.
+        """
+        path = '/home/user/file.txt'
+        mis_ignored.return_value = is_ignored
+        mis_link.return_value = is_link
+        endpoint = Endpoint(app, path)
+
+        assert endpoint.is_visible() is result
+
+    @mark.parametrize(
+        'path, result',
+        [
+            ['one', True],
+            ['one/five', True],
+            ['three', False],
+            ['two', False],
+            ['four', True],
+        ]
+    )
+    def test_is_ignored(self, app, mget_relative_path, path, result):
+        """
+        .is_ignored should return True if endpoint is in the ignore list.
+        """
+        app.repo.get_ignore_list.return_value = ['one', 'two/three', 'four']
+        mget_relative_path.return_value = path
+
+        assert Endpoint(app, path).is_ignored() is result
+

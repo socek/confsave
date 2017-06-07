@@ -43,9 +43,10 @@ class Commands(object):
         """
         Show list of files from home which are not yet added to the repo.
         """
+        self._init_repo()
         for filename in glob(self.app.get_home_path() + '/.*'):
             endpoint = Endpoint(self.app, filename)
-            if not endpoint.is_link():
+            if not endpoint.is_visible():
                 print(endpoint.path)
 
     def ignore(self, filename):
