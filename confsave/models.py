@@ -9,6 +9,8 @@ from os.path import islink
 from os.path import join
 from shutil import move
 
+from confsave.filematching import FilePatternMatching
+
 
 class Endpoint(object):
 
@@ -38,17 +40,19 @@ class Endpoint(object):
         """
         Is this endpoint visible for the show_list command?
         """
-        return not (self.is_ignored() or self.is_link())
+        return not (self.is_ignored() or self.is_link() or self.is_repo())
 
     def is_ignored(self):
         """
         Is this endpoint ignored?
         """
-        for ignore_path in self.app.repo.get_ignore_list():
-            print(ignore_path, self._get_relative_path())
-            if self._get_relative_path().startswith(ignore_path):
-                return True
-        return False
+        return FilePatternMatching(self._get_relative_path(), self.app.repo.get_ignore_list()).is_matching()
+
+    def is_repo(self):
+        """
+        Is this endpoint a path to confsave repo?
+        """
+        return self.path == self.app.get_repo_path()
 
     def get_repo_path(self):
         """

@@ -83,6 +83,11 @@ class TestEndpoint(object):
         with patch.object(Endpoint, '_get_user_path') as mock:
             yield mock
 
+    @yield_fixture
+    def mis_repo(self):
+        with patch.object(Endpoint, 'is_repo') as mock:
+            yield mock
+
     def test_init(self, app):
         """
         Endpoint should accept app and path to a file.
@@ -373,14 +378,32 @@ class TestEndpoint(object):
             ['three', False],
             ['two', False],
             ['four', True],
+            ['one.txt', False],
+            ['seven', True],
+            ['eight/nine/ten/eleven', True],
         ]
     )
-    def test_is_ignored(self, app, mget_relative_path, path, result):
+    def test_is_ignored(self, app, mget_relative_path, mis_repo, path, result):
         """
         .is_ignored should return True if endpoint is in the ignore list.
         """
-        app.repo.get_ignore_list.return_value = ['one', 'two/three', 'four']
+        app.repo.get_ignore_list.return_value = ['one', 'two/three', 'four', 'seve*', 'eight/nine/ten']
         mget_relative_path.return_value = path
+        mis_repo.return_value = False
 
         assert Endpoint(app, path).is_ignored() is result
 
+    @mark.parametrize(
+        'path, result',
+        [
+            ['/home/mymegahome/.confsave', True],
+            ['/home/mymegahome/somethingelse', False],
+        ]
+    )
+    def test_is_repo(self, app, path, result):
+        """
+        .is_repo should return True if endpoint's path is a confsave's repo path.
+        """
+        app.get_repo_path.return_value = '/home/mymegahome/.confsave'
+
+        assert Endpoint(app, path).is_repo() is result

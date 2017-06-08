@@ -46,7 +46,7 @@ class Commands(object):
         self._init_repo()
         for filename in glob(self.app.get_home_path() + '/.*'):
             endpoint = Endpoint(self.app, filename)
-            if not endpoint.is_visible():
+            if endpoint.is_visible():
                 print(endpoint.path)
 
     def ignore(self, filename):

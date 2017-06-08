@@ -86,7 +86,7 @@ class TestCommands(object):
         .show_list should not show files that are in the homedir but are also a symlink
         """
         mglob.return_value = ['first']
-        mendpoint.return_value.is_visible.return_value = True
+        mendpoint.return_value.is_visible.return_value = False
 
         commands.show_list()
 
@@ -98,7 +98,7 @@ class TestCommands(object):
         .show_list should show files that are in the homedir but are not links
         """
         mglob.return_value = ['first']
-        mendpoint.return_value.is_visible.return_value = False
+        mendpoint.return_value.is_visible.return_value = True
         commands.show_list()
 
         mendpoint.assert_called_once_with(app, 'first')

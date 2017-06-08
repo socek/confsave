@@ -1,3 +1,2 @@
 0.3
 * Create repo on server and give a link for it
-* ignore files (what for?)
