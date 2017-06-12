@@ -39,6 +39,36 @@ class TestCommands(object):
         with patch('confsave.commands.glob') as mock:
             yield mock
 
+    @yield_fixture
+    def mrepo(self):
+        with patch('confsave.commands.Repo') as mock:
+            yield mock
+
+    @yield_fixture
+    def mgetuser(self):
+        with patch('confsave.commands.getuser') as mock:
+            yield mock
+
+    @yield_fixture
+    def mgethostname(self):
+        with patch('confsave.commands.gethostname') as mock:
+            yield mock
+
+    @yield_fixture
+    def mabspath(self):
+        with patch('confsave.commands.abspath') as mock:
+            yield mock
+
+    @yield_fixture
+    def mexpanduser(self):
+        with patch('confsave.commands.expanduser') as mock:
+            yield mock
+
+    @yield_fixture
+    def mexists(self):
+        with patch('confsave.commands.exists') as mock:
+            yield mock
+
     def test_init_repo(self, commands, app):
         """
         ._init_repo should initialize the git repo if needed and read the confsave config.
@@ -206,3 +236,61 @@ class TestCommands(object):
             calls.append(call('    * Backup stored in: {}'.format(mendpoint.return_value.get_backup_path.return_value)))
 
         assert mprint.call_args_list == calls
+
+    def test_create_repo(self, commands, mrepo, mabspath, mexpanduser, mexists, mprint, mgetuser, mgethostname):
+        """
+        .create_repo should create repo and show url for the remote
+        """
+        mexists.return_value = False
+
+        commands.create_repo('somepath')
+
+        mexpanduser.assert_called_once_with('somepath')
+        mabspath.assert_called_once_with(mexpanduser.return_value)
+        mexists.assert_called_once_with(mabspath.return_value)
+        mrepo.init.assert_called_once_with(mabspath.return_value, bare=True)
+        mgethostname.assert_called_once_with()
+        mgetuser.assert_called_once_with()
+
+        assert mprint.call_args_list == [
+            call("Created repo at {}".format(mabspath.return_value)),
+            call('Possible remote url is: {0}@{1}:{2}'.format(
+                mgetuser.return_value,
+                mgethostname.return_value,
+                mabspath.return_value,
+            ))
+        ]
+
+    def test_create_repo_when_already_exists(
+        self,
+        commands,
+        mrepo,
+        mabspath,
+        mexpanduser,
+        mexists,
+        mprint,
+        mgetuser,
+        mgethostname,
+    ):
+        """
+        .create_repo should create repo and show url for the remote
+        """
+        mexists.return_value = True
+
+        commands.create_repo('somepath')
+
+        mexpanduser.assert_called_once_with('somepath')
+        mabspath.assert_called_once_with(mexpanduser.return_value)
+        mexists.assert_called_once_with(mabspath.return_value)
+        assert not mrepo.init.called
+        mgethostname.assert_called_once_with()
+        mgetuser.assert_called_once_with()
+
+        assert mprint.call_args_list == [
+            call("Path {} already exists.".format(mabspath.return_value)),
+            call('Possible remote url is: {0}@{1}:{2}'.format(
+                mgetuser.return_value,
+                mgethostname.return_value,
+                mabspath.return_value,
+            ))
+        ]

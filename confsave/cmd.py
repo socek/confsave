@@ -84,6 +84,11 @@ class CommandLine(object):
             dest='populate',
             action='store_true',
         )
+        self.parser.add_argument(
+            '--create-repo',
+            help='create repo for the configs',
+            dest='create_repo',
+        )
 
     def validate(self):
         """
@@ -108,6 +113,7 @@ class CommandLine(object):
             self.args.commit,
             self.args.set_repo,
             self.args.populate,
+            self.args.create_repo,
         ]
         if self._has_conflicts(conflicting_arguments):
             raise ValidationError('Two or more commands are in conflict')
@@ -155,6 +161,10 @@ class CommandLine(object):
 
         if self.args.populate:
             self.commands.populate()
+            return
+
+        if self.args.create_repo:
+            self.commands.create_repo(self.args.create_repo)
             return
 
         self.parser.print_help()

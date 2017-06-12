@@ -59,10 +59,19 @@ remote $ mkdir config.git
 remote $ cd config
 remote $ git init --bare
 ```
+
+You could also use conf save for this task:
+
+```
+remote $ cs --create-repo config
+Created repo at /home/user/config
+Possible remote url is: user@remote.net:/home/user/config
+```
+
 After that, you should have a git link looking like this:
 
 ```
-user@remote.net:config.git
+user@remote.net:/home/user/config
 ```
 
 Of corse it depends on how you will create your git repo. This is just and example.
@@ -86,10 +95,10 @@ Also you can check the status of tracked files by -s, and list of untracked file
 
 ## 5. FAQ
 - Is it safe?
-- If you use SSH or HTTPS to send your configuration files it should be safe.
+- If you use SSH or HTTPS to send your configuration files it should be safe. But like everything: use with caution!
 
 - Should I know git before using this tool?
-- Yes, you should. ConfSave is pretty young project so if anything strange happend, you should be able to fix the
+- Yes, you should. ConfSave is pretty young project so if anything unexpected happend, you need to be able to fix the
     problem by yourself.
 
 ## 5. Running tests

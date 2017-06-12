@@ -126,6 +126,7 @@ class TestCommandParser(object):
             ('commit', lambda commands: commands.commit, lambda args: (args.commit,)),
             ('set_repo', lambda commands: commands.set_repo, lambda args: (args.set_repo,)),
             ('populate', lambda commands: commands.populate, lambda args: ()),
+            ('create_repo', lambda commands: commands.create_repo, lambda args: (args.create_repo,)),
         ]
     )
     def test_run_command(self, cmd, mcommands, arg, command, args):
@@ -139,6 +140,8 @@ class TestCommandParser(object):
         cmd.args.status = False
         cmd.args.commit = None
         cmd.args.set_repo = None
+        cmd.args.populate = False
+        cmd.args.create_repo = None
 
         setattr(cmd.args, arg, sentinel.value)
 
@@ -159,6 +162,7 @@ class TestCommandParser(object):
         cmd.args.commit = None
         cmd.args.set_repo = None
         cmd.args.populate = False
+        cmd.args.create_repo = None
 
         cmd.parser = MagicMock()
 
@@ -231,6 +235,7 @@ class TestCommandParser(object):
             cmd.args.commit,
             cmd.args.set_repo,
             cmd.args.populate,
+            cmd.args.create_repo,
         ])
 
     def test_validate_conflicts_when_conflict_found(self, cmd, mhas_conflicts):
@@ -251,6 +256,7 @@ class TestCommandParser(object):
             cmd.args.commit,
             cmd.args.set_repo,
             cmd.args.populate,
+            cmd.args.create_repo,
         ])
 
     def test_validate_when_no_errors(self, cmd, mvalidate_conflicts, mvalidate_add):

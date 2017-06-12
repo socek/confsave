@@ -1,4 +1,11 @@
 from glob import glob
+from os.path import abspath
+from os.path import exists
+from os.path import expanduser
+from socket import gethostname
+from getpass import getuser
+
+from git import Repo
 
 from confsave.models import Endpoint
 
@@ -94,3 +101,21 @@ class Commands(object):
                 print('Populated {}'.format(file))
             if result['backuped']:
                 print('    * Backup stored in: {}'.format(endpoint.get_backup_path()))
+
+    def create_repo(self, path):
+        """
+        Create repo for the
+        """
+        fullpath = abspath(expanduser(path))
+
+        if exists(fullpath):
+            print("Path {} already exists.".format(fullpath))
+        else:
+            Repo.init(fullpath, bare=True)
+            print("Created repo at {}".format(fullpath))
+
+        print('Possible remote url is: {0}@{1}:{2}'.format(
+            getuser(),
+            gethostname(),
+            fullpath,
+        ))
