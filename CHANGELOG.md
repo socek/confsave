@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning]
 (http://semver.org/).
 
-## 0.3.0 - [Unreleased]
+## 0.3.0 - 2017-06-12
+### Added
+- --create-repo command will create repo directory and give possible link for it
 ### Fixed
 - Add command will not allow to add paths from outside of user's folder
 - Set remote command will allow to set remote more then once
