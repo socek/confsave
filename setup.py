@@ -6,7 +6,7 @@ install_requires = [
     'pytest==3.0.7',
     'mock==2.0.0',
     'GitPython==2.1.3',
-    'pyyaml==5.1',
+    'pyyaml==5.4',
     'freezegun==0.3.9',
 ]
 
